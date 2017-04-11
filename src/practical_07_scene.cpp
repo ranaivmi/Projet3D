@@ -445,7 +445,7 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
         = std::make_shared<ShaderProgram>("../shaders/flatVertex.glsl","../shaders/flatFragment.glsl");
     viewer.addShaderProgram(flatShader);
 
-    system->setDt(0.0025);
+    system->setDt(0.00125);
 
     //Activate collision detection
     system->setCollisionsDetection(true);
@@ -478,7 +478,7 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
         pr = 0.1;
         pm = 1.0;
         ParticlePtr particle = std::make_shared<Particle>(px, pv, pm, pr);
-        //system->addParticle(particle);
+        system->addParticle(particle);
 
         //Create a particleRenderable for each particle of the system
         //DynamicSystemRenderable act as a hierarchical renderable
@@ -497,14 +497,14 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
         pm = 1000.0;
         ParticlePtr particle1 = std::make_shared<Particle>(px, pv, pm, pr);
         particle1->setFixed(true);
-        //system->addParticle(particle1);
+        system->addParticle(particle1);
 
         px = glm::vec3(0.5, 0.0, 1.0);
         pv = glm::vec3(0.0, 0.0, -0.5);
         pr = 0.1;
         pm = 1.0;
         ParticlePtr particle2 = std::make_shared<Particle>(px, pv, pm, pr);
-        //system->addParticle(particle2);
+        system->addParticle(particle2);
 
         //Create a particleRenderable for each particle of the system
         ParticleRenderablePtr particleRenderable1 = std::make_shared<ParticleRenderable>(flatShader, particle1);
@@ -514,6 +514,7 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
 
         // Initialization snow
         int nb_snowball = 300;
+        ParticleRenderablePtr snowBallRenderable;
         for (int i = 2; i < nb_snowball; i++) {
             px = glm::vec3(frand_a_b(-1.0, 1.0), frand_a_b(-1.0, 1.0), frand_a_b(0.025, 3.0));
             pv = glm::vec3(0.0, 0.0, 0.0);
@@ -521,8 +522,8 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
             pm = frand_a_b(0, 0.005);
             ParticlePtr snowball = std::make_shared<Particle>(px, pv, pm, pr);
             system->addParticle(snowball);
-            ParticleRenderablePtr swnowBallRenderable = std::make_shared<ParticleRenderable>(flatShader, snowball);
-            HierarchicalRenderable::addChild(systemRenderable, swnowBallRenderable);
+            snowBallRenderable = std::make_shared<ParticleRenderable>(flatShader, snowball);
+            HierarchicalRenderable::addChild(systemRenderable, snowBallRenderable);
         }
         // End Snow
     }
