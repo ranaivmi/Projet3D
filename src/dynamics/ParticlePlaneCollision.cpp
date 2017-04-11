@@ -58,7 +58,7 @@ bool testParticlePlane(const ParticlePtr &particle, const PlanePtr &plane)
     //Plane::distanceToOrigin(): Return the distance to origin from the plane
     //Plane::normal(): Return the normal of the plane
     //Particle::getRadius(), Particle::getPosition()
-    if (abs(glm::dot(particle->getPosition(), plane->normal()) - plane->distanceToOrigin()) <= particle->getRadius()) {
+    if (glm::dot(particle->getPosition(), plane->normal()) - plane->distanceToOrigin() <= particle->getRadius()) {
        return true;
     }
     return false;
