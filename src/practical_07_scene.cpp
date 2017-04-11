@@ -513,21 +513,16 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
         HierarchicalRenderable::addChild(systemRenderable, particleRenderable2);
 
         // Initialization snow
-<<<<<<< HEAD
         int nb_snowball = 300;
-=======
-        int nb_snowball = 500;
-        ParticleRenderablePtr snowBallRenderable;
->>>>>>> 29e183d3c7257a848546faac97c21702cbbced1e
         for (int i = 2; i < nb_snowball; i++) {
             px = glm::vec3(frand_a_b(-1.0, 1.0), frand_a_b(-1.0, 1.0), frand_a_b(0.025, 3.0));
             pv = glm::vec3(0.0, 0.0, 0.0);
-            pr = frand_a_b(0, 0.005);
+            pr = frand_a_b(0, 0.025);
             pm = frand_a_b(0, 0.005);
             ParticlePtr snowball = std::make_shared<Particle>(px, pv, pm, pr);
             system->addParticle(snowball);
-            snowBallRenderable = std::make_shared<ParticleRenderable>(flatShader, snowball);
-            HierarchicalRenderable::addChild(systemRenderable, snowBallRenderable);
+            ParticleRenderablePtr swnowBallRenderable = std::make_shared<ParticleRenderable>(flatShader, snowball);
+            HierarchicalRenderable::addChild(systemRenderable, swnowBallRenderable);
         }
         // End Snow
     }
