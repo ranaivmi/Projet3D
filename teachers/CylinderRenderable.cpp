@@ -193,20 +193,21 @@ void teachers::CylinderRenderable::buildNormalPerVertex(unsigned int nbSlices)
     unsigned int iTop = nbVertices - 1;
     glm::vec3 bottomNormal(0.0, 0.0, -1.0);
     glm::vec3 topNormal(0.0, 0.0, +1.0);
+    glm::vec4 brun(0.68, 0.53, 0.39, 1.0);
 
     m_positions[iBottom] = glm::vec3(0.0, 0.0, 0.0);
     m_positions[iTop]    = glm::vec3(0.0, 0.0, 1.0);
     m_normals[iBottom] = bottomNormal;
     m_normals[iTop]    = topNormal;
-    m_colors[iBottom] = glm::vec4(bottomNormal, 1.0);
+    m_colors[iBottom] = brun;
     m_colors[iTop]    = glm::vec4(topNormal, 1.0);
 
     // let's round the bases
     double dTheta = 2.0 * M_PI / (double) nbSlices;
     unsigned int n = nbSlices;
     for (unsigned int i = 0; i < nbSlices; ++i) {
-        double currentCos = cos(i * dTheta);
-        double currentSin = sin(i * dTheta);
+        double currentCos = cos(i * dTheta)*0.75;
+        double currentSin = sin(i * dTheta)*0.75;
 
         m_positions[i]       = glm::vec3(currentCos, currentSin, 0.0);
         m_positions[i + n]   = glm::vec3(currentCos, currentSin, 1.0);
@@ -220,9 +221,9 @@ void teachers::CylinderRenderable::buildNormalPerVertex(unsigned int nbSlices)
 
         // let's color this cube with normal values
         // (since we do not have illumination yet, it will create a shaded effect)
-        m_colors[i]       = glm::vec4(currentCos, currentSin, 0.0, 1.0);
-        m_colors[i + n]   = glm::vec4(currentCos, currentSin, 0.0, 1.0);
-        m_colors[i + 2*n] = glm::vec4(0.0, 0.0, -1.0, 1.0); // black!
+        m_colors[i]       = brun;
+        m_colors[i + n]   = brun;
+        m_colors[i + 2*n] = brun;
         m_colors[i + 3*n] = glm::vec4(0.0, 0.0, 1.0, 1.0);
 
         // triangles: 4 on each slice (2 on the trunk, 1 on each base)
