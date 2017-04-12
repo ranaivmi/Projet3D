@@ -18,6 +18,7 @@
 
 #include "../include/keyframes/KeyframedCylinderRenderable.hpp"
 #include "../include/keyframes/GeometricTransformation.hpp"
+#include "../include/lighting/DirectionalLightRenderable.hpp"
 
 #include <cstdlib>
 
@@ -575,7 +576,25 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
           //Add a damping force field to the mobile.
           DampingForceFieldPtr dampingForceField = std::make_shared<DampingForceField>(vParticle, 0.9);
           system->addForceField(dampingForceField);
-        }
+
+
+        }  // Define a directional light for the whole scene
+    glm::vec3 lightDirection = glm::normalize(glm::vec3(0.0, -1.0, -1.0));
+    glm::vec3 ghostWhite(248.0/255, 248.0/255, 1.0);
+    DirectionalLightPtr directionalLight =
+        std::make_shared<DirectionalLight>(lightDirection, ghostWhite, ghostWhite, ghostWhite);
+    viewer.setDirectionalLight(directionalLight);
+    // Add a renderable to display the light and control it via mouse/key event
+    glm::vec3 lightPosition(0.0, 5.0, 8.0);
+    DirectionalLightRenderablePtr directionalLightRenderable
+        = std::make_shared<DirectionalLightRenderable>(flatShader, directionalLight, lightPosition);
+    glm::mat4 localTransformation = glm::scale(glm::mat4(1.0), glm::vec3(0.5, 0.5, 0.5));
+    directionalLightRenderable->setLocalTransform(localTransformation);
+    viewer.addRenderable(directionalLightRenderable);
+
+    // Position the camera
+//    viewer.getCamera().setViewMatrix(
+  //      glm::lookAt(glm::vec3(0, -8, 7), glm::vec3(0, 0, 4), glm::vec3(0, 0, 1)) );
     }
 
     //Initialize a force field that apply to all the particles of the system to simulate gravity
