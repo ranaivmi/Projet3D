@@ -11,7 +11,7 @@ class CylinderRenderable : public HierarchicalRenderable
 {
     public:
         ~CylinderRenderable();
-        CylinderRenderable(ShaderProgramPtr program, bool normalPerVertex = true, unsigned int nbSlices = 20);
+    CylinderRenderable(ShaderProgramPtr program, bool normalPerVertex = true, unsigned int nbSlices = 20);
 
     protected:
         void do_draw();

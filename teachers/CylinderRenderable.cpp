@@ -9,7 +9,8 @@
 #include <iostream>
 
 teachers::CylinderRenderable::CylinderRenderable(ShaderProgramPtr shaderProgram,
-    bool normalPerVertex, unsigned int nbSlices)
+						 bool normalPerVertex, 
+						 unsigned int nbSlices)
   : HierarchicalRenderable(shaderProgram),
     m_normalPerVertex(normalPerVertex),
     m_pBuffer(0), m_cBuffer(0), m_nBuffer(0), m_iBuffer(0)
@@ -174,7 +175,7 @@ void teachers::CylinderRenderable::buildNormalPerFace(unsigned int nbSlices)
 }
 
 
-void teachers::CylinderRenderable::buildNormalPerVertex(unsigned int nbSlices)
+void teachers::CylinderRenderable::buildNormalPerVertex(unsigned int nbSlices )
 {
     // basic cylinder: radius 1, along z axis, bases on z == 0 and z == 1
     // The normal on a given coord around z is the coord itself!
@@ -195,8 +196,8 @@ void teachers::CylinderRenderable::buildNormalPerVertex(unsigned int nbSlices)
     glm::vec3 topNormal(0.0, 0.0, +1.0);
     glm::vec4 brun(0.68, 0.53, 0.39, 1.0);
 
-    m_positions[iBottom] = glm::vec3(0.0, 0.0, 0.0);
-    m_positions[iTop]    = glm::vec3(0.0, 0.0, 1.0);
+    m_positions[iBottom] = glm::vec3(0.0,0.0,0.0);
+    m_positions[iTop]    = glm::vec3(0.0,0.0,1.0);
     m_normals[iBottom] = bottomNormal;
     m_normals[iTop]    = topNormal;
     m_colors[iBottom] = brun;

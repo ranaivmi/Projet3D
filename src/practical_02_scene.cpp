@@ -6,18 +6,30 @@
 #include "../teachers/ConeRenderable.hpp"
 #include "../teachers/MeshRenderable.hpp"
 
+void createFir(Viewer& viewer, glm::mat4 FinaltranslateM,ShaderProgramPtr flatShader );
 
 void initialize_practical_02_scene(Viewer& viewer)
 {
+
     // create all shaders of this scene, then add them to the viewer
     ShaderProgramPtr flatShader
         = std::make_shared<ShaderProgram>("../shaders/flatVertex.glsl",
                                           "../shaders/flatFragment.glsl");
     viewer.addShaderProgram(flatShader);
 
-
+    glm::mat4 translateM(1.0);
     // create renderable objects
     viewer.addRenderable(std::make_shared<FrameRenderable>(flatShader));
+
+    for (int i=0; i<5; i++){
+	translateM = glm::translate(glm::mat4(), glm::vec3(i*5.0,0.0,0.0));
+	createFir(viewer, translateM, flatShader);
+    }
+   
+}
+
+void createFir(Viewer& viewer, glm::mat4 FinaltranslateM , ShaderProgramPtr flatShader ){
+    
     glm::mat4 scaleM(1.0);
     glm::mat4 translateM(1.0);
 
@@ -25,9 +37,9 @@ void initialize_practical_02_scene(Viewer& viewer)
     std::shared_ptr<teachers::CylinderRenderable> Tron
         = std::make_shared<teachers::CylinderRenderable>(flatShader, true, 30);
     scaleM = glm::scale(glm::mat4(), glm::vec3(0.5, 0.5, 0.5));
-    Tron->setLocalTransform(scaleM*Tron->getModelMatrix());
-   
-
+      Tron->setLocalTransform(scaleM*Tron->getModelMatrix());
+      Tron->setModelMatrix(FinaltranslateM);
+    
     //Haut du sapin
     std::shared_ptr<teachers::ConeRenderable> Cone1
         = std::make_shared<teachers::ConeRenderable>(flatShader, true, 30);
@@ -54,7 +66,4 @@ void initialize_practical_02_scene(Viewer& viewer)
     HierarchicalRenderable::addChild(Tron, Cone2);
     HierarchicalRenderable::addChild(Tron, Cone3);
     viewer.addRenderable(Tron);
-
-    
-
 }

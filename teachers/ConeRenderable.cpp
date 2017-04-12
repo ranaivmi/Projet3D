@@ -9,7 +9,7 @@
 #include <iostream>
 
 teachers::ConeRenderable::ConeRenderable(ShaderProgramPtr shaderProgram,
-    bool normalPerVertex, unsigned int nbSlices)
+					 bool normalPerVertex, unsigned int nbSlices)
   : HierarchicalRenderable(shaderProgram),
     m_normalPerVertex(normalPerVertex),
     m_pBuffer(0), m_cBuffer(0), m_nBuffer(0), m_iBuffer(0)
@@ -195,8 +195,8 @@ void teachers::ConeRenderable::buildNormalPerVertex(unsigned int nbSlices)
     glm::vec3 topNormal(0.0, 0.0, +1.0);
     glm::vec4 vert(0.0, 0.75, 0.0, 1.0);
 
-    m_positions[iBottom] = glm::vec3(0.0, 0.0, 0.0);
-    m_positions[iTop]    = glm::vec3(0.0, 0.0, 1.5);
+    m_positions[iBottom] = glm::vec3(0.0,0.0,0.0);
+    m_positions[iTop]    = glm::vec3(0.0, 0.0, 1.0);
     m_normals[iBottom] = bottomNormal;
     m_normals[iTop]    = topNormal;
     m_colors[iBottom] = glm::vec4(bottomNormal, 1.0);
