@@ -4,6 +4,7 @@
 #include "../HierarchicalRenderable.hpp"
 #include "../dynamics/ConstantForceField.hpp"
 
+
 /**@brief Status of a ControlledForceField.
  *
  * This status holds important variables that are used to control a force
@@ -65,7 +66,7 @@ public:
    * @param program The shader program used to render the force applied to particles.
    * @param forceField The force field to control with user inputs.
    */
-  ControlledForceFieldRenderable(ShaderProgramPtr program,ConstantForceFieldPtr forceField );
+  ControlledForceFieldRenderable(ShaderProgramPtr program,ConstantForceFieldPtr forceField);
   ~ControlledForceFieldRenderable();
 
 private:
