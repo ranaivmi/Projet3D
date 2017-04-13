@@ -12,7 +12,7 @@ TexturedPlaneRenderable::TexturedPlaneRenderable(
         ShaderProgramPtr shaderProgram, const std::string& textureFilename)
     : HierarchicalRenderable(shaderProgram),
       m_pBuffer(0), m_nBuffer(0), m_tBuffer(0), m_texId(0),
-      m_wrapOption(0), m_filterOption(0)
+      m_wrapOption(1), m_filterOption(0)
 {
     // Initialize geometry
     teachers::getUnitPlane(m_positions, m_normals, m_origTexCoords);
@@ -48,8 +48,8 @@ TexturedPlaneRenderable::TexturedPlaneRenderable(
     glcheck(glBindTexture(GL_TEXTURE_2D, m_texId));
 
     // texture options
-    glcheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
     glcheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+    glcheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
     glcheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
     glcheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
 
