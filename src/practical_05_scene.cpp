@@ -5,7 +5,7 @@
 
 #include "../include/texturing/TexturedPlaneRenderable.hpp"
 #include "../include/texturing/TexturedCubeRenderable.hpp"
-#include "../include/texturing/TexturedCylinderRenderable.hpp"
+//#include "../include/texturing/TexturedCylinderRenderable.hpp"
 #include "../include/texturing/MultiTexturedCubeRenderable.hpp"
 #include "../include/texturing/MipMapCubeRenderable.hpp"
 #include "../include/texturing/TexturedMeshRenderable.hpp"
@@ -66,13 +66,13 @@ void initialize_practical_05_scene(Viewer& viewer)
     viewer.addRenderable(texPlane);
 
     //Textured cylinder
-    filename = "../textures/mipmap1.png";
+    /*filename = "../textures/mipmap1.png";
     TexturedCylinderRenderablePtr texCylinder = std::make_shared<TexturedCylinderRenderable>(texShader, filename, 20);
     //parentTransformation = glm::translate(glm::mat4(1.0), glm::vec3(-2,0.0,0.5));
     //texCylinder->setParentTransform(parentTransformation);
     //texCylinder->setMaterial(pearl);
     viewer.addRenderable(texCylinder);
-
+    */
     //Mipmap cube
     std::vector<std::string> filenames;
     filenames.push_back("../textures/mipmap1.png");
