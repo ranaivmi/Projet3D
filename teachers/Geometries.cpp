@@ -222,7 +222,7 @@ void teachers::getUnitPlane(std::vector<glm::vec3>& positions, std::vector<glm::
     texCoords[5] =glm::vec2(0.0,1.0);
 }
 
-void teachers::getUnitCylinder(std::vector<glm::vec3> &positions, std::vector<glm::vec3> &normals, const unsigned int &slices)
+void teachers::getUnitCylinder(std::vector<glm::vec3> &positions, std::vector<glm::vec3> &normals, const unsigned int &slices, std::vector<glm::vec2>& texCoords)
 {
     size_t number_of_triangles = slices * 4;
     size_t number_of_vertices = number_of_triangles * 3;
@@ -230,7 +230,7 @@ void teachers::getUnitCylinder(std::vector<glm::vec3> &positions, std::vector<gl
 
     positions.resize(number_of_vertices, glm::vec3(0.0,0.0,0.0));
     normals.resize(number_of_vertices, glm::vec3(0.0,0.0,0.0));
-
+    texCoords.resize(number_of_vertices, glm::vec2(0.0,0.0));
     float previous_angle = (slices - 1) * angle_step;
     float angle = 0;
     float previous_sin = std::sin( previous_angle );
@@ -240,12 +240,15 @@ void teachers::getUnitCylinder(std::vector<glm::vec3> &positions, std::vector<gl
     for( size_t i = 0; i < slices;
             ++ i,
             previous_sin = sin, previous_cos = cos,
-            angle += angle_step, cos = std::cos( angle ), sin = std::sin( angle) )
+	     angle += angle_step, cos = std::cos( angle ), sin = std::sin( angle) )
     {
         size_t voffset = 12 * i;
         positions[ voffset +  0 ] = glm::vec3{0,0,1};
         positions[ voffset +  1 ] = glm::vec3{previous_cos, previous_sin, 1};
         positions[ voffset +  2 ] = glm::vec3{cos, sin,1};
+	texCoords[ voffset +  0 ] = glm::vec2(0.5,0.5);
+	texCoords[ voffset +  1 ] = glm::vec2(previous_cos/2+0.5,previous_sin/2+0.5);
+	texCoords[ voffset +  2 ] = glm::vec2(cos/2+0.5,sin/2+0.5);
 
         positions[ voffset +  3 ] = glm::vec3{cos, sin,1};
         positions[ voffset +  4 ] = glm::vec3{previous_cos, previous_sin, 1};
@@ -255,8 +258,8 @@ void teachers::getUnitCylinder(std::vector<glm::vec3> &positions, std::vector<gl
         positions[ voffset +  7 ] = glm::vec3{previous_cos, previous_sin, 0};
         positions[ voffset +  8 ] = glm::vec3{cos, sin,0};
 
-        positions[ voffset +  9 ] = glm::vec3{cos, sin,0};
-        positions[ voffset + 10 ] = glm::vec3{previous_cos, previous_sin, 0};
+        positions[ voffset +  9 ] = glm::vec3{cos*0.5, sin*0.5,0};
+        positions[ voffset + 10 ] = glm::vec3{previous_cos*0.5, previous_sin*0.5, 0};
         positions[ voffset + 11 ] = glm::vec3{0, 0, 0}; //useless
 
         normals[ voffset +  0 ] = glm::vec3{0,0,1};

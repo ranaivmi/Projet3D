@@ -115,8 +115,8 @@ void formes::CylinderRenderable::buildNormalPerVertex(unsigned int nbSlices )
     m_positions[iTop]    = glm::vec3(0.0,0.0,1.0);
     m_normals[iBottom] = bottomNormal;
     m_normals[iTop]    = topNormal;
-    m_colors[iBottom] = brun;
-    m_colors[iTop]    = glm::vec4(topNormal, 1.0);
+    m_colors[iBottom] = brun-glm::vec4(0.3,0.3,0.3,1.0);
+    m_colors[iTop]    = brun;
 
     // let's round the bases
     double dTheta = 2.0 * M_PI / (double) nbSlices;
@@ -140,7 +140,7 @@ void formes::CylinderRenderable::buildNormalPerVertex(unsigned int nbSlices )
         m_colors[i]       = brun;
         m_colors[i + n]   = brun;
         m_colors[i + 2*n] = brun;
-        m_colors[i + 3*n] = glm::vec4(0.0, 0.0, 1.0, 1.0);
+        m_colors[i + 3*n] = brun;
 
         // triangles: 4 on each slice (2 on the trunk, 1 on each base)
         m_indices.push_back(glm::ivec3(i,         (i + 1)%n,     i + n));
