@@ -26,7 +26,7 @@ void LightedCylinderRenderable::do_draw()
     }
 
     // Call the super method to bind other uniforms/attributes & draw
-    teachers::CylinderRenderable::do_draw();
+    formes::CylinderRenderable::do_draw();
 
     if (nitLocation != ShaderProgram::null_location) {
         glcheck(glDisableVertexAttribArray(nitLocation));

@@ -6,6 +6,7 @@
 #include "../include/dynamics/ConstantForceField.hpp"
 #include "../include/dynamics/SpringForceField.hpp"
 #include "../include/dynamics/EulerExplicitSolver.hpp"
+#include "../include/CylinderRenderable.hpp"
 
 #include "../include/dynamics_rendering/DynamicSystemRenderable.hpp"
 #include "../include/dynamics_rendering/ParticleRenderable.hpp"
@@ -527,7 +528,15 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
         }
         // End Snow
     }
-
+    //La cible 
+    glm::mat4 scaleM(1.0);
+    glm::mat4 rotationM(1.0);
+    std::shared_ptr<formes::CylinderRenderable> Cible
+        = std::make_shared<formes::CylinderRenderable>(flatShader, 30);
+    scaleM = glm::scale(glm::mat4(), glm::vec3(0.5, 0.5, 0.1));
+    rotationM = glm::rotate(glm::mat4(1.0), (float)(M_PI/2.0), glm::vec3(1.0,0.0,0.0));
+    Cible->setModelMatrix(rotationM*scaleM);
+    viewer.addRenderable(Cible);
     //Initialize a force field that apply to all the particles of the system to simulate gravity
     //Add it to the system as a force field
     ConstantForceFieldPtr gravityForceField = std::make_shared<ConstantForceField>(system->getParticles(), glm::vec3{0,0,-10} );

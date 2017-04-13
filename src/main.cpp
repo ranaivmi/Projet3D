@@ -30,7 +30,7 @@ int main(int argc, char* argv[])
 
     switch (scene_to_load) {
         case 1:
-            initialize_practical_01_scene(viewer);
+	    initialize_practical_01_scene(viewer);
             break;
         case 2:
             initialize_practical_02_scene(viewer);
@@ -58,6 +58,7 @@ int main(int argc, char* argv[])
             break;
         case 75:
             initialize_practical_07_scene(viewer, 75);
+	    //initialize_practical_02_scene(viewer);
             break;
         default:
             LOG(fatal, "unknown practical number " << scene_to_load);
