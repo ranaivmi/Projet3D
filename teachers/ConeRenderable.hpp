@@ -1,5 +1,5 @@
-#ifndef TEACHERS_CYLINDER_RENDERABLE_HPP
-#define TEACHERS_CYLINDER_RENDERABLE_HPP
+#ifndef TEACHERS_CONE_RENDERABLE_HPP
+#define TEACHERS_CONE_RENDERABLE_HPP
 
 #include "../include/HierarchicalRenderable.hpp"
 #include <vector>
@@ -7,11 +7,11 @@
 
 namespace teachers {
 
-class CylinderRenderable : public HierarchicalRenderable
+class ConeRenderable : public HierarchicalRenderable
 {
     public:
-        ~CylinderRenderable();
-    CylinderRenderable(ShaderProgramPtr program, bool normalPerVertex = true, unsigned int nbSlices = 20);
+        ~ConeRenderable();
+    ConeRenderable(ShaderProgramPtr program, bool normalPerVertex = true, unsigned int nbSlices = 20);
 
     protected:
         void do_draw();
@@ -19,8 +19,8 @@ class CylinderRenderable : public HierarchicalRenderable
 
     private:
         bool m_normalPerVertex;
-        void buildNormalPerVertex(unsigned int nbSlices);
-        void buildNormalPerFace(unsigned int nbSlices);
+    void buildNormalPerVertex(unsigned int nbSlices);
+    void buildNormalPerFace(unsigned int nbSlices);
 
         std::vector< glm::vec3 > m_positions;
         std::vector< glm::vec4 > m_colors;

@@ -32,12 +32,18 @@ void ControlledForceFieldStatus::clear()
     angularSpeed = 2.0;
     dampingFactor = 0.8;
     min_intensity = -1;
-    max_intensity = 10;
+    max_intensity = 1000;
 
     accelerating =  false;
     deaccelerating =  false;
     turning_left =  false;
     turning_right =  false;
+
+     /* Rana */
+    angle2 = 0.0;
+    angularSpeed2 = 1.0;
+    move_high = false;
+    move_down = false;
 }
 
 ControlledForceFieldRenderable::ControlledForceFieldRenderable(ShaderProgramPtr program,ConstantForceFieldPtr forceField)
@@ -85,27 +91,31 @@ ControlledForceFieldRenderable::~ControlledForceFieldRenderable()
 
 void ControlledForceFieldRenderable::do_keyPressedEvent(sf::Event& e)
 {
-    if (e.key.code == sf::Keyboard::Left) {
+    if (e.key.code == sf::Keyboard::Escape) {
+        m_status.accelerating = true;
+    } else if (e.key.code == sf::Keyboard::Left) {
         m_status.turning_left = true;
     } else if (e.key.code == sf::Keyboard::Right) {
         m_status.turning_right = true;
     } else if (e.key.code == sf::Keyboard::Up) {
-        m_status.accelerating = true;
+        m_status.move_high = true;
     } else if (e.key.code == sf::Keyboard::Down) {
-        m_status.deaccelerating = true;
+        m_status.move_down = true;
     }
 }
 
 void ControlledForceFieldRenderable::do_keyReleasedEvent(sf::Event& e)
 {
-    if (e.key.code == sf::Keyboard::Left) {
+    if (e.key.code == sf::Keyboard::Escape) {
+        m_status.accelerating = false;
+    } else if (e.key.code == sf::Keyboard::Left) {
         m_status.turning_left = false;
     } else if (e.key.code == sf::Keyboard::Right) {
         m_status.turning_right = false;
     } else if (e.key.code == sf::Keyboard::Up) {
-        m_status.accelerating = false;
+        m_status.move_high = false;
     } else if (e.key.code == sf::Keyboard::Down) {
-        m_status.deaccelerating = false;
+        m_status.move_down = false;
     }
 }
 
@@ -114,28 +124,35 @@ void ControlledForceFieldRenderable::do_animate(float time)
     if (time > m_status.last_time) {
         float dt = time - m_status.last_time;
 
+        bool maj = false;
         if (m_status.turning_left && !m_status.turning_right) {
             m_status.angle += dt * m_status.angularSpeed;
-            float cos = std::cos(m_status.angle);
-            float sin = std::sin(m_status.angle);
-            m_status.movement =
-                glm::vec3(cos * m_status.initial.x - sin * m_status.initial.y,
-                          sin * m_status.initial.x + cos * m_status.initial.y,
-                          0);
+            maj = true;
         } else if (m_status.turning_right && !m_status.turning_left) {
             m_status.angle -= dt * m_status.angularSpeed;
-            float cos = std::cos(m_status.angle);
-            float sin = std::sin(m_status.angle);
+            maj = true;
+        } else if (m_status.move_high && !m_status.move_down && m_status.angle2 < (M_PI / 2.0)) {
+            m_status.angle2 += dt * m_status.angularSpeed2;
+            maj = true;
+        } else if (m_status.move_down && !m_status.move_high && m_status.angle2 > -(M_PI / 2.0)) {
+            m_status.angle2 -= dt * m_status.angularSpeed2;
+            maj = true;
+        }
+
+        if (maj) {
+            float cos_theta = std::cos(m_status.angle);
+            float sin_theta = std::sin(m_status.angle);
+            float cos_phi = std::cos(90 - m_status.angle2);
+            float sin_phi = std::sin(90 - m_status.angle2);
+            float p = 1.0;
             m_status.movement =
-                glm::vec3(cos * m_status.initial.x - sin * m_status.initial.y,
-                          sin * m_status.initial.x + cos * m_status.initial.y,
-                          0);
+                  glm::vec3(p * sin_phi * cos_theta,
+                            p * sin_phi * sin_theta,
+                            p * cos_phi);
         }
 
         if (m_status.accelerating)
-            m_status.intensity += dt * m_status.acceleration;
-        else if (m_status.deaccelerating)
-            m_status.intensity -= dt * m_status.deacceleration;
+            m_status.intensity = m_status.max_intensity;
         else m_status.intensity *= dt * m_status.dampingFactor;
 
         m_status.intensity =

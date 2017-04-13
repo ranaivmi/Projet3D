@@ -1,4 +1,4 @@
-#include "./CylinderRenderable.hpp"
+#include "./ConeRenderable.hpp"
 #include "./../include/gl_helper.hpp"
 #include "./../include/log.hpp"
 #include "./../include/Utils.hpp"
@@ -8,14 +8,13 @@
 #include <GL/glew.h>
 #include <iostream>
 
-teachers::CylinderRenderable::CylinderRenderable(ShaderProgramPtr shaderProgram,
-						 bool normalPerVertex, 
-						 unsigned int nbSlices)
+teachers::ConeRenderable::ConeRenderable(ShaderProgramPtr shaderProgram,
+					 bool normalPerVertex, unsigned int nbSlices)
   : HierarchicalRenderable(shaderProgram),
     m_normalPerVertex(normalPerVertex),
     m_pBuffer(0), m_cBuffer(0), m_nBuffer(0), m_iBuffer(0)
 {
-    std::cerr << "Hey, teacher, leave them kids alone! -- Cylinder" << std::endl;
+    std::cerr << "Hey, teacher, leave them kids alone! -- Cone" << std::endl;
 
     if (m_normalPerVertex)
         buildNormalPerVertex(nbSlices);   // with indexing
@@ -42,7 +41,7 @@ teachers::CylinderRenderable::CylinderRenderable(ShaderProgramPtr shaderProgram,
     }
 }
 
-teachers::CylinderRenderable::~CylinderRenderable()
+teachers::ConeRenderable::~ConeRenderable()
 {
     glcheck(glDeleteBuffers(1, &m_pBuffer));
     glcheck(glDeleteBuffers(1, &m_cBuffer));
@@ -51,7 +50,7 @@ teachers::CylinderRenderable::~CylinderRenderable()
         glcheck(glDeleteBuffers(1, &m_iBuffer));
 }
 
-void teachers::CylinderRenderable::do_draw()
+void teachers::ConeRenderable::do_draw()
 {
     //Location
     int modelLocation = m_shaderProgram->getUniformLocation("modelMat");
@@ -101,12 +100,12 @@ void teachers::CylinderRenderable::do_draw()
     }
 }
 
-void teachers::CylinderRenderable::do_animate(float time)
+void teachers::ConeRenderable::do_animate(float time)
 {
 }
 
 
-void teachers::CylinderRenderable::buildNormalPerFace(unsigned int nbSlices)
+void teachers::ConeRenderable::buildNormalPerFace(unsigned int nbSlices)
 {
     // basic cylinder: radius 1, along z axis, bases on z == 0 and z == 1
     // The normal on a given coord around z is the coord itself!
@@ -133,7 +132,7 @@ void teachers::CylinderRenderable::buildNormalPerFace(unsigned int nbSlices)
 
         // first triangle along z
         m_positions.push_back(glm::vec3(currentCos, currentSin, 0.0));
-        m_positions.push_back(glm::vec3(nextCos, nextSin, 1.0));
+        m_positions.push_back(topCenter);
         m_positions.push_back(glm::vec3(nextCos, nextSin, 0.0));
         for (unsigned int i = 0; i < 3; i++) {
             m_colors.push_back(glm::vec4(normal, 1.0));
@@ -141,14 +140,14 @@ void teachers::CylinderRenderable::buildNormalPerFace(unsigned int nbSlices)
         }
 
         // second triangle along z
-        m_positions.push_back(glm::vec3(currentCos, currentSin, 0.0));
+        /*m_positions.push_back(glm::vec3(currentCos, currentSin, 0.0));
         m_positions.push_back(glm::vec3(nextCos, nextSin, 1.0));
         m_positions.push_back(glm::vec3(currentCos, currentSin, 1.0));
         for (unsigned int i = 0; i < 3; i++) {
             m_colors.push_back(glm::vec4(normal, 1.0));
             m_normals.push_back(normal);
         }
-
+	*/
         // bottom and top bases
         m_positions.push_back(bottomCenter);
         m_positions.push_back(glm::vec3(currentCos, currentSin, 0.0));
@@ -160,14 +159,14 @@ void teachers::CylinderRenderable::buildNormalPerFace(unsigned int nbSlices)
             m_colors.push_back(glm::vec4(0.0, 0.0, -1.0, 1.0));
         }
 
-        m_positions.push_back(topCenter);
-        m_positions.push_back(glm::vec3(currentCos, currentSin, 1.0));
+        /*m_positions.push_back(topCenter);
+	 m_positions.push_back(glm::vec3(currentCos, currentSin, 1.0));
         m_positions.push_back(glm::vec3(nextCos, nextSin, 1.0));
         for (unsigned int i = 0; i < 3; i++) {
             m_normals.push_back(glm::vec3(0.0, 0.0, +1.0));
             m_colors.push_back(glm::vec4(0.0, 0.0, +1.0, 1.0));
         }
-
+	*/
         currentTheta = currentTheta + dTheta;
         currentCos = nextCos;
         currentSin = nextSin;
@@ -175,7 +174,7 @@ void teachers::CylinderRenderable::buildNormalPerFace(unsigned int nbSlices)
 }
 
 
-void teachers::CylinderRenderable::buildNormalPerVertex(unsigned int nbSlices )
+void teachers::ConeRenderable::buildNormalPerVertex(unsigned int nbSlices)
 {
     // basic cylinder: radius 1, along z axis, bases on z == 0 and z == 1
     // The normal on a given coord around z is the coord itself!
@@ -194,26 +193,26 @@ void teachers::CylinderRenderable::buildNormalPerVertex(unsigned int nbSlices )
     unsigned int iTop = nbVertices - 1;
     glm::vec3 bottomNormal(0.0, 0.0, -1.0);
     glm::vec3 topNormal(0.0, 0.0, +1.0);
-    glm::vec4 brun(0.68, 0.53, 0.39, 1.0);
+    glm::vec4 vert(0.0, 0.75, 0.0, 1.0);
 
     m_positions[iBottom] = glm::vec3(0.0,0.0,0.0);
-    m_positions[iTop]    = glm::vec3(0.0,0.0,1.0);
+    m_positions[iTop]    = glm::vec3(0.0, 0.0, 1.0);
     m_normals[iBottom] = bottomNormal;
     m_normals[iTop]    = topNormal;
-    m_colors[iBottom] = brun;
+    m_colors[iBottom] = glm::vec4(bottomNormal, 1.0);
     m_colors[iTop]    = glm::vec4(topNormal, 1.0);
 
     // let's round the bases
     double dTheta = 2.0 * M_PI / (double) nbSlices;
     unsigned int n = nbSlices;
     for (unsigned int i = 0; i < nbSlices; ++i) {
-        double currentCos = cos(i * dTheta)*0.75;
-        double currentSin = sin(i * dTheta)*0.75;
+        double currentCos = cos(i * dTheta)*1.25;
+        double currentSin = sin(i * dTheta)*1.25;
 
         m_positions[i]       = glm::vec3(currentCos, currentSin, 0.0);
-        m_positions[i + n]   = glm::vec3(currentCos, currentSin, 1.0);
+        m_positions[i + n]   = m_positions[iTop];
         m_positions[i + 2*n] = glm::vec3(currentCos, currentSin, 0.0);
-        m_positions[i + 3*n] = glm::vec3(currentCos, currentSin, 1.0);
+        //m_positions[i + 3*n] = glm::vec3(currentCos, currentSin, 1.0);
 
         m_normals[i]       = glm::vec3(currentCos, currentSin, 0.0);
         m_normals[i + n]   = glm::vec3(currentCos, currentSin, 1.0);
@@ -222,9 +221,9 @@ void teachers::CylinderRenderable::buildNormalPerVertex(unsigned int nbSlices )
 
         // let's color this cube with normal values
         // (since we do not have illumination yet, it will create a shaded effect)
-        m_colors[i]       = brun;
-        m_colors[i + n]   = brun;
-        m_colors[i + 2*n] = brun;
+        m_colors[i]       = vert;
+        m_colors[i + n]   = glm::vec4(1.0, 1.0, 1.0, 1.0);
+        m_colors[i + 2*n] = glm::vec4(0.0, 0.5, 0.0, 1.0); // black!
         m_colors[i + 3*n] = glm::vec4(0.0, 0.0, 1.0, 1.0);
 
         // triangles: 4 on each slice (2 on the trunk, 1 on each base)
