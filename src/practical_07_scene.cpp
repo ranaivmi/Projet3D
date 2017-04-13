@@ -21,6 +21,8 @@
 #include "../include/keyframes/GeometricTransformation.hpp"
 #include "../include/lighting/DirectionalLightRenderable.hpp"
 #include "../include/dynamics_rendering/ControlledForceCanonRenderable.hpp"
+#include "../teachers/Geometries.hpp"
+#include <array>
 
 #include <cstdlib>
 
@@ -535,11 +537,52 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
         }
 
         {
+
           // Initialization of the target
           ShaderProgramPtr phongShader = std::make_shared<ShaderProgram>(
         "../shaders/phongVertex.glsl", "../shaders/phongFragment.glsl");
           viewer.addShaderProgram(phongShader);
           auto cylinder = std::make_shared<KeyframedCylinderRenderable>(phongShader, Material::Emerald());
+
+
+          // Création de la target en tant qu'ensemble de particules
+          std::vector<ParticlePtr> particules;
+          ConstantForceFieldPtr gravityForceField
+            = std::make_shared<ConstantForceField>(particules, glm::vec3{0, 0, 10} );
+          system->addForceField(gravityForceField);
+          float R = 1.0;
+          float r = 10;
+          float p = 4 * M_PI * r;
+          float theta = 2 * asin(r / R);
+          float L = theta * R;
+          float j = 2 * M_PI * R / L;
+          float i = 0;
+          int cur_theta = 0;
+          while (cur_theta < 2 * M_PI) {
+              px = glm::vec3(cos(cur_theta), sin(cur_theta), 0.0);
+              pv = glm::vec3(0.0, 0.0, 0.0);
+              pr = r;
+              pm = 0.05;
+              ParticlePtr snowball = std::make_shared<Particle>(px, pv, pm, pr);
+              system->addParticle(snowball);
+              snowBallRenderable = std::make_shared<ParticleRenderable>(flatShader, snowball);
+              HierarchicalRenderable::addChild(systemRenderable, snowBallRenderable);
+              cur_theta += theta;
+          }
+          /*
+          px = glm::vec3(1.0, 0, 1.0);
+          pv = glm::vec3(0.0, 0.0, 0.0);
+          pr = 0.25;
+          pm = 0.05;
+          ParticlePtr snowball = std::make_shared<Particle>(px, pv, pm, pr);
+          system->addParticle(snowball);
+          snowBallRenderable = std::make_shared<ParticleRenderable>(flatShader, snowball);
+          HierarchicalRenderable::addChild(systemRenderable, snowBallRenderable);
+          HierarchicalRenderable::addChild(cylinder, snowBallRenderable);
+*/
+          // Fin création ens
+
+
           cylinder->setLocalTransform(glm::rotate(glm::mat4(1.0), (float)(M_PI/2.0), glm::vec3(1,0,0)) * glm::scale(glm::mat4(1.0), glm::vec3(0.5,0.5,0.125)) * glm::translate(glm::mat4(1.0), glm::vec3(0,1,7.5)));
           cylinder->setParentTransform(glm::mat4(1.0));
           int n = 5;
@@ -598,7 +641,8 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
           //    viewer.getCamera().setViewMatrix(
           //      glm::lookAt(glm::vec3(0, -8, 7), glm::vec3(0, 0, 4), glm::vec3(0, 0, 1)) );
     }
-    //La cible 
+    //La cible
+    /*
     glm::mat4 scaleM(1.0);
     glm::mat4 rotationM(1.0);
     std::shared_ptr<formes::CylinderRenderable> Cible
@@ -606,7 +650,7 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
     scaleM = glm::scale(glm::mat4(), glm::vec3(0.5, 0.5, 0.1));
     rotationM = glm::rotate(glm::mat4(1.0), (float)(M_PI/2.0), glm::vec3(1.0,0.0,0.0));
     Cible->setModelMatrix(rotationM*scaleM);
-    viewer.addRenderable(Cible);
+    viewer.addRenderable(Cible); */
     //Initialize a force field that apply to all the particles of the system to simulate gravity
     //Add it to the system as a force field
     ConstantForceFieldPtr gravityForceField = std::make_shared<ConstantForceField>(system->getParticles(), glm::vec3{0,0,-10} );

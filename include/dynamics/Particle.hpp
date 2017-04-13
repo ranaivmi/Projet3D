@@ -5,6 +5,8 @@
 #include <memory>
 #include <glm/glm.hpp>
 
+#include <./../../include/HierarchicalRenderable.hpp>
+
 /**@brief Represent a particle as a moving ball.
  *
  * This class is used to model particles in a dynamic system.
@@ -13,7 +15,7 @@
  * both its position and its velocity. This ball can be fixed,
  * making its position constant and its velocity null.
  */
-class Particle
+class Particle 
 {
 public:
     /**@brief Instantiate a dynamic particle.
