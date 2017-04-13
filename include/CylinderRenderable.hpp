@@ -1,17 +1,17 @@
-#ifndef TEACHERS_CYLINDER_RENDERABLE_HPP
-#define TEACHERS_CYLINDER_RENDERABLE_HPP
+#ifndef FORMES_CYLINDER_RENDERABLE_HPP
+#define FORMES_CYLINDER_RENDERABLE_HPP
 
 #include "../include/HierarchicalRenderable.hpp"
 #include <vector>
 #include <glm/glm.hpp>
 
-namespace teachers {
+namespace formes {
 
 class CylinderRenderable : public HierarchicalRenderable
 {
     public:
         ~CylinderRenderable();
-        CylinderRenderable(ShaderProgramPtr program, bool normalPerVertex = true, unsigned int nbSlices = 20);
+    CylinderRenderable(ShaderProgramPtr program, unsigned int nbSlices = 20);
 
     protected:
         void do_draw();
@@ -34,5 +34,4 @@ class CylinderRenderable : public HierarchicalRenderable
 };
 
 }
-// no Ptr typedef here, a bit too naughty in a namespace...
 #endif

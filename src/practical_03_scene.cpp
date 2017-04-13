@@ -4,7 +4,7 @@
 #include "../include/FrameRenderable.hpp"
 #include "../teachers/CubeRenderable.hpp"
 #include "../teachers/IndexedCubeRenderable.hpp"
-#include "../teachers/CylinderRenderable.hpp"
+#include "../include/CylinderRenderable.hpp"
 #include "../teachers/MeshRenderable.hpp"
 
 
@@ -25,8 +25,8 @@ void initialize_practical_03_scene(Viewer& viewer)
     glm::mat4 translationM(1.0);
 
     //Torso
-    std::shared_ptr<teachers::CylinderRenderable> torso
-        = std::make_shared<teachers::CylinderRenderable>(flatShader);
+    std::shared_ptr<formes::CylinderRenderable> torso
+        = std::make_shared<formes::CylinderRenderable>(flatShader);
     scaleM = glm::scale(glm::mat4(1.0), glm::vec3(0.5,0.5,2.0));
     torso->setLocalTransform(scaleM*torso->getModelMatrix());
 
@@ -39,8 +39,8 @@ void initialize_practical_03_scene(Viewer& viewer)
     head->setLocalTransform(rotationM);
 
     //Left arm
-    std::shared_ptr<teachers::CylinderRenderable> leftArm
-        = std::make_shared<teachers::CylinderRenderable>(flatShader);
+    std::shared_ptr<formes::CylinderRenderable> leftArm
+        = std::make_shared<formes::CylinderRenderable>(flatShader);
     rotationM = glm::rotate(glm::mat4(1.0), -(float)(M_PI/2.0), glm::vec3(0,1,0));
     translationM = glm::translate(glm::mat4(1.0), glm::vec3(0.0,0.0,2.0));
     leftArm->setParentTransform(translationM);
@@ -58,8 +58,8 @@ void initialize_practical_03_scene(Viewer& viewer)
     leftHand->setLocalTransform(rot2*rot1*scaleM);
 
     //Right arm
-    std::shared_ptr<teachers::CylinderRenderable> rightArm
-        = std::make_shared<teachers::CylinderRenderable>(flatShader);
+    std::shared_ptr<formes::CylinderRenderable> rightArm
+        = std::make_shared<formes::CylinderRenderable>(flatShader);
     rotationM = glm::rotate(glm::mat4(1.0), (float)(M_PI/2.0), glm::vec3(0,1,0));
     translationM = glm::translate(glm::mat4(1.0), glm::vec3(0.0,0.0,2.0));
     rightArm->setParentTransform(translationM);

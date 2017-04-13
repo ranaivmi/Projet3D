@@ -25,10 +25,10 @@ void ParticlePlaneCollision::do_solveCollision()
     //Plane::normal(): Return the normal of the plane
     //Particle::getRadius(), Particle::getPosition(), Particle::getVelocity(), Particle::setPosition(), Particle::setVelocity()
 
-    //m_particle->setPosition(m_particle->getPosition() - ((abs(glm::dot(m_particle->getPosition(), m_plane->normal()) - m_plane->distanceToOrigin())) - m_particle->getRadius()) * m_plane->normal());
-    //m_particle->setVelocity(m_particle->getVelocity() - (1 + m_restitution) * (glm::dot(m_particle->getVelocity(), m_plane->normal()) * m_plane->normal()));
-    m_particle->setPosition(glm::vec3(m_particle->getPosition()[0], m_particle->getPosition()[1], 3.0));
-    m_particle->setVelocity(glm::vec3(0.0, 0.0, -2.0));
+    m_particle->setPosition(m_particle->getPosition() - ((abs(glm::dot(m_particle->getPosition(), m_plane->normal()) - m_plane->distanceToOrigin())) - m_particle->getRadius()) * m_plane->normal());
+    m_particle->setVelocity(m_particle->getVelocity() - (1 + m_restitution) * (glm::dot(m_particle->getVelocity(), m_plane->normal()) * m_plane->normal()));
+    //m_particle->setPosition(glm::vec3(m_particle->getPosition()[0], m_particle->getPosition()[1], 3.0));
+    //m_particle->setVelocity(glm::vec3(0.0, 0.0, -2.0));
 }
 
 

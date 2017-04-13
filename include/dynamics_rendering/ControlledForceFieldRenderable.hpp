@@ -35,6 +35,13 @@ public:
     bool deaccelerating;
     bool turning_left;
     bool turning_right;
+
+    // Rana
+    float angle2;
+    float angularSpeed2;
+    bool move_high;
+    bool move_down;
+
 };
 
 

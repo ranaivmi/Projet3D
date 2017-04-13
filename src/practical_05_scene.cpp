@@ -64,13 +64,13 @@ void initialize_practical_05_scene(Viewer& viewer)
     texPlane->setMaterial(pearl);
     viewer.addRenderable(texPlane);
 
-    //Textured cube
+    //Textured cylinder
     filename = "../textures/mipmap1.png";
-    TexturedCubeRenderablePtr texCube = std::make_shared<TexturedCubeRenderable>(texShader, filename);
-    parentTransformation = glm::translate(glm::mat4(1.0), glm::vec3(-2,0.0,0.5));
-    texCube->setParentTransform(parentTransformation);
-    texCube->setMaterial(pearl);
-    viewer.addRenderable(texCube);
+    TexturedCylinderRenderablePtr texCylinder = std::make_shared<TexturedCylinderRenderable>(texShader, filename, 20);
+    //parentTransformation = glm::translate(glm::mat4(1.0), glm::vec3(-2,0.0,0.5));
+    //texCylinder->setParentTransform(parentTransformation);
+    //texCylinder->setMaterial(pearl);
+    viewer.addRenderable(texCylinder);
 
     //Mipmap cube
     std::vector<std::string> filenames;

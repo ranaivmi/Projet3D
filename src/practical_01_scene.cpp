@@ -22,7 +22,7 @@ void initialize_practical_01_scene(Viewer& viewer)
     // create renderable objects
     viewer.addRenderable(std::make_shared<FrameRenderable>(defaultShader));
 
-    std::shared_ptr<teachers::CubeRenderable> teachersCube
+    /*std::shared_ptr<teachers::CubeRenderable> teachersCube
         = std::make_shared<teachers::CubeRenderable>(flatShader);
     teachersCube->setModelMatrix(glm::translate(glm::mat4(), glm::vec3(2.0, 0.0, 0.0)));
     viewer.addRenderable(teachersCube);
@@ -30,11 +30,10 @@ void initialize_practical_01_scene(Viewer& viewer)
     std::shared_ptr<teachers::IndexedCubeRenderable> teachersIndexedCube
         = std::make_shared<teachers::IndexedCubeRenderable>(flatShader);
     teachersIndexedCube->setModelMatrix(glm::translate(glm::mat4(), glm::vec3(-2.0, 0.0, 0.0)));
-    viewer.addRenderable(teachersIndexedCube);
+    viewer.addRenderable(teachersIndexedCube);*/
 
-    //MeshRenderablePtr mesh = std::make_shared<MeshRenderable>(pointLightShader, "./../meshes/suzanne.obj");
-    std::shared_ptr<teachers::MeshRenderable> mesh = std::make_shared<teachers::MeshRenderable>(flatShader, "./../meshes/AT-ATseanbdesigns.obj");
-    //mesh->setModelMatrix( glm::translate(glm::mat4(1.0), glm::vec3(-6,2,0)) );
-    mesh->setModelMatrix( glm::scale(glm::mat4(1.0), glm::vec3(0.05,0.05,0.05)) );
-    viewer.addRenderable(mesh);
+    
+    std::shared_ptr<teachers::MeshRenderable> teachersMesh
+        = std::make_shared<teachers::MeshRenderable>(flatShader, "../meshes/cannon.obj");
+    viewer.addRenderable(teachersMesh);
 }
