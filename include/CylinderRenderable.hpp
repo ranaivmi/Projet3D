@@ -1,17 +1,17 @@
-#ifndef TEACHERS_CONE_RENDERABLE_HPP
-#define TEACHERS_CONE_RENDERABLE_HPP
+#ifndef FORMES_CYLINDER_RENDERABLE_HPP
+#define FORMES_CYLINDER_RENDERABLE_HPP
 
 #include "../include/HierarchicalRenderable.hpp"
 #include <vector>
 #include <glm/glm.hpp>
 
-namespace teachers {
+namespace formes {
 
-class ConeRenderable : public HierarchicalRenderable
+class CylinderRenderable : public HierarchicalRenderable
 {
     public:
-        ~ConeRenderable();
-    ConeRenderable(ShaderProgramPtr program, bool normalPerVertex = true, unsigned int nbSlices = 20);
+        ~CylinderRenderable();
+    CylinderRenderable(ShaderProgramPtr program, unsigned int nbSlices = 20);
 
     protected:
         void do_draw();
@@ -19,8 +19,8 @@ class ConeRenderable : public HierarchicalRenderable
 
     private:
         bool m_normalPerVertex;
-    void buildNormalPerVertex(unsigned int nbSlices);
-    void buildNormalPerFace(unsigned int nbSlices);
+        void buildNormalPerVertex(unsigned int nbSlices);
+        void buildNormalPerFace(unsigned int nbSlices);
 
         std::vector< glm::vec3 > m_positions;
         std::vector< glm::vec4 > m_colors;
@@ -34,5 +34,4 @@ class ConeRenderable : public HierarchicalRenderable
 };
 
 }
-// no Ptr typedef here, a bit too naughty in a namespace...
 #endif

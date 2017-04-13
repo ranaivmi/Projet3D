@@ -17,7 +17,7 @@ namespace teachers {
 
 void getUnitCube(std::vector<glm::vec3>& positions, std::vector<glm::vec3>& normals, std::vector<glm::vec2> &texCoords);
 void getUnitIndexedCube(std::vector<glm::vec3>& positions, std::vector<glm::vec3>& normals, std::vector<glm::ivec3>& indices);
-void getUnitCylinder(std::vector<glm::vec3>& positions, std::vector<glm::vec3>& normals, const unsigned int& slices);
+void getUnitCylinder(std::vector<glm::vec3>& positions, std::vector<glm::vec3>& normals, const unsigned int& slices, std::vector<glm::vec2>& texCoords);
 void getUnitPlane(std::vector<glm::vec3>& positions, std::vector<glm::vec3>& normals, std::vector<glm::vec2> &texCoords);
 void getUnitSphere(std::vector<glm::vec3>& positions, std::vector<glm::vec3>& normals, const unsigned int& strips, const unsigned int& slices);
 void getTorus(std::vector<glm::vec3>& positions, std::vector<glm::vec3>& normals, const float& a, const float& c, const unsigned int& strips, const unsigned int& slices);

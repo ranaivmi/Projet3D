@@ -88,13 +88,13 @@ find_package(OpenGL REQUIRED)
 file(
     GLOB_RECURSE
     HEADER_FILES
-    include/*.hpp teachers/*.hpp
+    include/*.hpp teachers/*.hpp 
     )
 
 file(
     GLOB_RECURSE
     SOURCE_FILES
-    src/*.cpp teachers/*.cpp
+    src/*.cpp teachers/*.cpp formes/*.cpp
     )
 
 file(

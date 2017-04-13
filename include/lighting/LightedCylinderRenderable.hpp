@@ -2,9 +2,9 @@
 #define LIGHTED_CYLINDER_RENDERABLE_HPP
 
 #include "./../lighting/Materiable.hpp"
-#include "./../../teachers/CylinderRenderable.hpp"
+#include "./../CylinderRenderable.hpp"
 
-class LightedCylinderRenderable : public teachers::CylinderRenderable, public Materiable
+class LightedCylinderRenderable : public formes::CylinderRenderable, public Materiable
 {
 public:
     ~LightedCylinderRenderable();
