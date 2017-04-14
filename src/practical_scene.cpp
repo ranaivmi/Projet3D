@@ -135,7 +135,7 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
     system->setDt(0.0250);
 
     //Activate collision detection
-    system->setCollisionsDetection(false);
+    system->setCollisionsDetection(true);
 
     //Initialize the restitution coefficient for collision
     //1.0 = full elastic response
@@ -253,7 +253,6 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
     //Particle vs Particle collision
     {
         // Initialization snow
-
         TexturedMeshRenderablePtr meshBall = std::make_shared<TexturedMeshRenderable>(texShader, "../meshes/sphere.obj", "../textures/grass_texture.png");
         scaleTransformation = glm::translate(glm::mat4(1.0), glm::vec3(0.0, -PL, 13.0)) * glm::scale(glm::mat4(1.0), glm::vec3(100.0, SNOWBALL_RADIUS, SNOWBALL_RADIUS));
         meshBall->setMaterial(pearl);
@@ -261,7 +260,7 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
         meshBall->setParentTransform(glm::mat4(1.0));
         HierarchicalRenderable::addChild(systemRenderable, meshBall);
 
-        int nb_snowball = 2000;
+        int nb_snowball = 0;
         SnowballParticleRenderablePtr snowBallRenderable;
         for (int i = 1; i < nb_snowball; i++) {
             px = glm::vec3(frand_a_b(-PS, PS), frand_a_b(-PS, PS), frand_a_b(0.0, 50.0));
@@ -288,7 +287,7 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
             for (int i = 0; i < n; i++) {
                 cylinder->addParentTransformKeyframe(0.5 + 2*i, GeometricTransformation(glm::vec3(2.0, 0.0, 0.0)));
                 cylinder->addParentTransformKeyframe(1.5 + 2*i, GeometricTransformation(glm::vec3(-2.0, 0.0, 0.0)));
-  	      }
+  	       }
   	       cylinder->setMaterial(Material::Pearl());
             viewer.addRenderable(cylinder);
 
@@ -314,10 +313,10 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
           // Particule au centre
           ParticlePtr particule = std::make_shared<Particle>(px, pv, pm, r - epsilon);
           system->addParticle(particule);
-            particulesSansPoids.push_back(particule);
-            ParticleRenderablePtr particuleRenderable  = std::make_shared<ParticleRenderable>(flatShader, particule);
-            HierarchicalRenderable::addChild(systemRenderable, particuleRenderable);
-            HierarchicalRenderable::addChild(cylinder, particuleRenderable);
+          particulesSansPoids.push_back(particule);
+          ParticleRenderablePtr particuleRenderable  = std::make_shared<ParticleRenderable>(flatShader, particule);
+          HierarchicalRenderable::addChild(systemRenderable, particuleRenderable);
+          HierarchicalRenderable::addChild(cylinder, particuleRenderable);
 
             // Particules autour
             int nb_cercles = (R-r) / (2 * r);
@@ -340,27 +339,19 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
                 i++;
             }
 
-            ConstantForceFieldPtr gravityForceField
-              = std::make_shared<ConstantForceField>(particulesSansPoids, glm::vec3{0, 0, 10} );
-            system->addForceField(gravityForceField);
-            // Fin création ens
-
-            //cylinder->setModelMatrix(glm::rotate(glm::mat4(1.0), (float)(M_PI/2.0), glm::vec3(1,0,0)) );
-
-            //cylinder->setLocalTransform((glm::rotate(glm::mat4(1.0), (float)(M_PI/2.0), glm::vec3(1,0,0)) * glm::scale(glm::mat4(1.0), glm::vec3(0.5,0.5,0.125)) * glm::translate(glm::mat4(1.0), glm::vec3(0,1,7.\
-  5))) * cylinder->getModelMatrix());
-            //cylinder->setParentTransform(glm::mat4(1.0));
-
-
-
+            //ConstantForceFieldPtr annulerPoids
+            //  = std::make_shared<ConstantForceField>(particulesSansPoids, glm::vec3{0, 0, 10} );
+            //system->addForceField(annulerPoids);
+            // Fin création de l'ensemble
           }
 
           {
             // Initilization of the ball
             glm::vec3 px(0.0, 0.0, 0.0);
             glm::vec3 pv(0.0, 0.0, 0.0);
-            float pm = 1.0, pr = 0.1;
-            px = glm::vec3(0.0,0.0,1.0);
+            float pm = 1.0, pr = 1.0;
+            //px = glm::vec3(0.0,LPL*COS_45,LPL*COS_45+1.0);
+            px = glm::vec3(0.0,0.0,0.0);
             ParticlePtr mobile = std::make_shared<Particle>( px, pv, pm, pr);
             system->addParticle( mobile );
 
@@ -374,6 +365,12 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
   	        ConstantForceFieldPtr force = std::make_shared<ConstantForceField>(vParticle, nullForce);
             system->addForceField(force);
 
+            /*std::vector<ParticlePtr> particulesSansPoids;
+            particulesSansPoids.push_back(mobile);
+            ConstantForceFieldPtr annulerPoids
+              = std::make_shared<ConstantForceField>(particulesSansPoids, glm::vec3{0, 0, 10} );
+            system->addForceField(annulerPoids); */
+
             //Initialize a renderable for the force field applied on the mobile particle.
             //This renderable allows to modify the attribute of the force by key/mouse events
             //Add this renderable to the systemRenderable.
@@ -381,8 +378,8 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
             HierarchicalRenderable::addChild(systemRenderable, forceRenderable);
 
             //Add a damping force field to the mobile.
-            DampingForceFieldPtr dampingForceField = std::make_shared<DampingForceField>(vParticle, 0.9);
-            system->addForceField(dampingForceField);
+            //DampingForceFieldPtr dampingForceField = std::make_shared<DampingForceField>(vParticle, 0.9);
+            //system->addForceField(dampingForceField);
 
 
           }
@@ -404,17 +401,12 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
 
       }
 
-    // Position the camera
-//    viewer.getCamera().setViewMatrix(
-  //      glm::lookAt(glm::vec3(0, -8, 7), glm::vec3(0, 0, 4), glm::vec3(0, 0, 1)) );
     }
     //Initialize a force field that apply to all the particles of the system to simulate gravity
     //Add it to the system as a force field
-    ConstantForceFieldPtr gravityForceField = std::make_shared<ConstantForceField>(system->getParticles(), glm::vec3{0,0,-10} );
-    system->addForceField(gravityForceField);
-
-
-        // End Snow
+    //ConstantForceFieldPtr gravityForceField = std::make_shared<ConstantForceField>(system->getParticles(), glm::vec3{0,0,-10} );
+    //system->addForceField(gravityForceField);
+    // End Snow
 
 
     //Initialize a force field that apply to all the particles of the system to simulate gravity
