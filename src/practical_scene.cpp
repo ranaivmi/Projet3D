@@ -54,8 +54,8 @@ void createFir(DynamicSystemRenderablePtr &systemRenderable, glm::mat4 Finaltran
     std::shared_ptr<formes::CylinderRenderable> Tron
         = std::make_shared<formes::CylinderRenderable>(flatShader, 30);
     scaleM = glm::scale(glm::mat4(), glm::vec3(0.5, 0.5, 0.5));
-      Tron->setLocalTransform(scaleM*Tron->getModelMatrix());
-      Tron->setModelMatrix(FinaltranslateM);
+    Tron->setLocalTransform(scaleM*Tron->getModelMatrix());
+    Tron->setModelMatrix(FinaltranslateM);
 
     //Haut du sapin
     std::shared_ptr<formes::ConeRenderable> Cone1
@@ -299,7 +299,7 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
           // Initilization of the ball
           glm::vec3 px(0.0, 0.0, 0.0);
           glm::vec3 pv(0.0, 0.0, 0.0);
-          float pm = 1.0, pr = 0.1;
+          float pm = 1.0, pr = 0.3;
           px = glm::vec3(0.0,0.0,1.0);
           ParticlePtr mobile = std::make_shared<Particle>( px, pv, pm, pr);
           system->addParticle( mobile );
@@ -332,13 +332,6 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
     DirectionalLightPtr directionalLight =
         std::make_shared<DirectionalLight>(lightDirection, ghostWhite, ghostWhite, ghostWhite);
     viewer.setDirectionalLight(directionalLight);
-    // Add a renderable to display the light and control it via mouse/key event
-    glm::vec3 lightPosition(0.0, 5.0, 8.0);
-    DirectionalLightRenderablePtr directionalLightRenderable
-        = std::make_shared<DirectionalLightRenderable>(flatShader, directionalLight, lightPosition);
-    glm::mat4 localTransformation = glm::scale(glm::mat4(1.0), glm::vec3(0.5, 0.5, 0.5));
-    directionalLightRenderable->setLocalTransform(localTransformation);
-    viewer.addRenderable(directionalLightRenderable);
     
     // Position the camera
 //    viewer.getCamera().setViewMatrix(
