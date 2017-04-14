@@ -54,8 +54,8 @@ void createFir(DynamicSystemRenderablePtr &systemRenderable, glm::mat4 Finaltran
     std::shared_ptr<formes::CylinderRenderable> Tron
         = std::make_shared<formes::CylinderRenderable>(flatShader, 30);
     scaleM = glm::scale(glm::mat4(), glm::vec3(0.5, 0.5, 0.5));
-      Tron->setLocalTransform(scaleM*Tron->getModelMatrix());
-      Tron->setModelMatrix(FinaltranslateM);
+    Tron->setLocalTransform(scaleM*Tron->getModelMatrix());
+    Tron->setModelMatrix(FinaltranslateM);
 
     //Haut du sapin
     std::shared_ptr<formes::ConeRenderable> Cone1
@@ -400,7 +400,49 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
             viewer.addRenderable(directionalLightRenderable);
 
       }
+        }
 
+        {
+          // Initilization of the ball
+          glm::vec3 px(0.0, 0.0, 0.0);
+          glm::vec3 pv(0.0, 0.0, 0.0);
+          float pm = 1.0, pr = 0.3;
+          px = glm::vec3(0.0,0.0,1.0);
+          ParticlePtr mobile = std::make_shared<Particle>( px, pv, pm, pr);
+          system->addParticle( mobile );
+
+          ParticleRenderablePtr mobileRenderable = std::make_shared<ParticleRenderable>(flatShader, mobile);
+          HierarchicalRenderable::addChild(systemRenderable, mobileRenderable);
+
+          //Initialize a force field that apply only to the mobile particle
+          glm::vec3 nullForce(0.0, 0.0, 0.0);
+          std::vector<ParticlePtr> vParticle;
+          vParticle.push_back(mobile);
+	  ConstantForceFieldPtr force = std::make_shared<ConstantForceField>(vParticle, nullForce);
+          system->addForceField(force);
+
+          //Initialize a renderable for the force field applied on the mobile particle.
+          //This renderable allows to modify the attribute of the force by key/mouse events
+          //Add this renderable to the systemRenderable.
+          ControlledForceFieldRenderablePtr forceRenderable = std::make_shared<ControlledForceFieldRenderable>(flatShader, force);
+          HierarchicalRenderable::addChild(systemRenderable, forceRenderable);
+
+          //Add a damping force field to the mobile.
+          DampingForceFieldPtr dampingForceField = std::make_shared<DampingForceField>(vParticle, 0.9);
+          system->addForceField(dampingForceField);
+
+
+        }
+    // Define a directional light for the whole scene
+    glm::vec3 lightDirection = glm::normalize(glm::vec3(0.0, 1.0,-1.));
+    glm::vec3 ghostWhite(248.0/255, 248.0/255, 1.0);
+    DirectionalLightPtr directionalLight =
+        std::make_shared<DirectionalLight>(lightDirection, ghostWhite, ghostWhite, ghostWhite);
+    viewer.setDirectionalLight(directionalLight);
+
+    // Position the camera
+//    viewer.getCamera().setViewMatrix(
+  //      glm::lookAt(glm::vec3(0, -8, 7), glm::vec3(0, 0, 4), glm::vec3(0, 0, 1)) );
     }
     //Initialize a force field that apply to all the particles of the system to simulate gravity
     //Add it to the system as a force field
