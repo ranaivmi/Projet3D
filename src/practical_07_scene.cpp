@@ -1,5 +1,8 @@
 #include "../include/Viewer.hpp"
 #include "../include/FrameRenderable.hpp"
+#include "../include/CylinderRenderable.hpp"
+#include "../include/ConeRenderable.hpp"
+#include "../teachers/MeshRenderable.hpp"
 
 #include "../include/dynamics/DynamicSystem.hpp"
 #include "../include/dynamics/DampingForceField.hpp"
@@ -18,17 +21,62 @@
 #include "../include/texturing/TexturedPlaneRenderable.hpp"
 #include "../include/texturing/TexturedMeshRenderable.hpp"
 #include "../include/lighting/DirectionalLightRenderable.hpp"
+#include "../include/keyframes/GeometricTransformation.hpp"
 
 #include <cstdlib>
 
 #define PS 50.0
-#define PL 15.0
-#define SNOWBALL_RADIUS 0.025
+#define PL 25.0
+#define LPL PL/5
+#define SNOWBALL_RADIUS 0.25
 #define PH 3.0
 #define COS_45 0.70710678118
+#define FIR_SIZE 4.0
+#define WIND 10.0
 
 void snow_scene(Viewer& viewer,
     DynamicSystemPtr& system, DynamicSystemRenderablePtr& systemRenderable);
+
+void createFir(DynamicSystemRenderablePtr &systemRenderable, glm::mat4 FinaltranslateM , ShaderProgramPtr flatShader ){
+
+    glm::mat4 scaleM(1.0);
+    glm::mat4 translateM(1.0);
+
+    // Tron du sapin
+    std::shared_ptr<formes::CylinderRenderable> Tron
+        = std::make_shared<formes::CylinderRenderable>(flatShader, 30);
+    scaleM = glm::scale(glm::mat4(), glm::vec3(0.5, 0.5, 0.5));
+      Tron->setLocalTransform(scaleM*Tron->getModelMatrix());
+      Tron->setModelMatrix(FinaltranslateM);
+
+    //Haut du sapin
+    std::shared_ptr<formes::ConeRenderable> Cone1
+        = std::make_shared<formes::ConeRenderable>(flatShader, 30);
+    translateM = glm::translate(glm::mat4(), glm::vec3(0.0, 0.0, 0.5));
+    Cone1->setParentTransform(translateM);
+    scaleM = glm::scale(glm::mat4(), glm::vec3(1.0,1.0,1.0));
+    Cone1->setLocalTransform(scaleM);
+
+    std::shared_ptr<formes::ConeRenderable> Cone2
+        = std::make_shared<formes::ConeRenderable>(flatShader, 30);
+    translateM = glm::translate(glm::mat4(), glm::vec3(0.0, 0.0, 1.0));
+    Cone2->setParentTransform(translateM);
+    scaleM = glm::scale(glm::mat4(), glm::vec3(0.85,0.85,1.0));
+    Cone2->setLocalTransform(scaleM);
+
+    std::shared_ptr<formes::ConeRenderable> Cone3
+        = std::make_shared<formes::ConeRenderable>(flatShader, 30);
+    translateM = glm::translate(glm::mat4(), glm::vec3(0.0, 0.0, 1.5));
+    Cone3->setParentTransform(translateM);
+    scaleM = glm::scale(glm::mat4(), glm::vec3(0.70,0.70,0.8));
+    Cone3->setLocalTransform(scaleM);
+
+    HierarchicalRenderable::addChild(Tron, Cone1);
+    HierarchicalRenderable::addChild(Tron, Cone2);
+    HierarchicalRenderable::addChild(Tron, Cone3);
+    //viewer.addRenderable(Tron);
+    HierarchicalRenderable::addChild( systemRenderable, Tron );
+}
 
 void initialize_practical_07_scene(Viewer& viewer, unsigned int scene_to_load)
 {
@@ -66,16 +114,12 @@ void initialize_practical_07_scene(Viewer& viewer, unsigned int scene_to_load)
     viewer.startAnimation();
 }
 
-double frand_a_b(double a, double b){
+double frand_a_b(double a, double b) {
     return ( rand()/(double)RAND_MAX ) * (b-a) + a;
 }
 
 void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderablePtr &systemRenderable)
 {
-    //Position the camera
-    viewer.getCamera().setViewMatrix(
-        glm::lookAt(glm::vec3(0, 2, 2), glm::vec3(0,0,0), glm::vec3(0,0,1)) );
-
     //Initialize a shader for the following renderables
     ShaderProgramPtr flatShader
         = std::make_shared<ShaderProgram>("../shaders/flatVertex.glsl","../shaders/flatFragment.glsl");
@@ -87,7 +131,7 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
     viewer.addShaderProgram(texShader);
     viewer.addShaderProgram(phongShader);
 
-    system->setDt(0.00125);
+    system->setDt(0.0250);
 
     //Activate collision detection
     system->setCollisionsDetection(false);
@@ -142,13 +186,6 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
     PlanePtr high_plane = std::make_shared<Plane>(p5, normalFlat);
     system->addPlaneObstacle(high_plane);
 
-    //Create a plane renderable to display the obstacle
-    // PlaneRenderablePtr flatPlaneRenderable = std::make_shared<QuadRenderable>(flatShader, p1, p2, p4, p3, color);
-    // HierarchicalRenderable::addChild( systemRenderable, flatPlaneRenderable );
-    // PlaneRenderablePtr leaningPlaneRenderable = std::make_shared<QuadRenderable>(flatShader, p3, p4, p6, p5, color);
-    // HierarchicalRenderable::addChild( systemRenderable, leaningPlaneRenderable );
-    // PlaneRenderablePtr highPlaneRenderable = std::make_shared<QuadRenderable>(flatShader, p5, p6, p8, p7, color);
-    // HierarchicalRenderable::addChild( systemRenderable, highPlaneRenderable );
     filename = "../textures/snow_tex2.png";
     TexturedPlaneRenderablePtr flatPlaneRenderable = std::make_shared<TexturedPlaneRenderable>(texShader, filename);
     scaleTransformation = glm::translate(glm::mat4(1.0), glm::vec3(0.0, -PL/2, 0.0)) * glm::scale(glm::mat4(1.0), glm::vec3(PS, PL, 10.0));
@@ -157,19 +194,40 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
     HierarchicalRenderable::addChild( systemRenderable, flatPlaneRenderable );
 
     TexturedPlaneRenderablePtr leaningPlaneRenderable = std::make_shared<TexturedPlaneRenderable>(texShader, filename);
-    scaleTransformation = glm::rotate(glm::mat4(1.0), (float) (M_PI/4.0), glm::vec3(1.0, 0.0, 0.0)) * glm::translate(glm::mat4(1.0), glm::vec3(0.0, PL/2, 0.0)) * glm::scale(glm::mat4(1.0), glm::vec3(PS, PL, 10.0));
+    scaleTransformation = glm::rotate(glm::mat4(1.0), (float) (M_PI/4.0), glm::vec3(1.0, 0.0, 0.0)) * glm::translate(glm::mat4(1.0), glm::vec3(0.0, LPL/2, 0.0)) * glm::scale(glm::mat4(1.0), glm::vec3(PS, LPL, 10.0));
     leaningPlaneRenderable->setParentTransform(scaleTransformation);
     leaningPlaneRenderable->setMaterial(pearl);
     HierarchicalRenderable::addChild( systemRenderable, leaningPlaneRenderable );
 
     TexturedPlaneRenderablePtr highPlaneRenderable = std::make_shared<TexturedPlaneRenderable>(texShader, filename);
-    scaleTransformation = glm::translate(glm::mat4(1.0), glm::vec3(0.0, PL/2+PL*COS_45, PL*COS_45)) * glm::scale(glm::mat4(1.0), glm::vec3(PS, PL, 10.0));
+    scaleTransformation = glm::translate(glm::mat4(1.0), glm::vec3(0.0, PL/2+LPL*COS_45, LPL*COS_45)) * glm::scale(glm::mat4(1.0), glm::vec3(PS, PL, 10.0));
     highPlaneRenderable->setParentTransform(scaleTransformation);
     highPlaneRenderable->setMaterial(pearl);
     HierarchicalRenderable::addChild( systemRenderable, highPlaneRenderable );
 
-    //viewer.addRenderable(suzanne);
-    HierarchicalRenderable::addChild( systemRenderable, suzanne );
+    //Position the camera
+    viewer.getCamera().setViewMatrix(
+        glm::lookAt(glm::vec3(0, -PL, 10), glm::vec3(0, PL/2 + LPL*COS_45, LPL*COS_45), glm::vec3(0,0,1)) );
+
+    glm::mat4 translateM(1.0);
+
+    // Firs on flatPlane
+    for (int i = 5; i > 0; i--) {
+        for (int j = 0; j < i; j++) {
+            translateM = glm::translate(glm::mat4(), glm::vec3(+ i*FIR_SIZE, -PL + (j+1)*FIR_SIZE, 0));
+            createFir(systemRenderable, translateM, flatShader);
+            translateM = glm::translate(glm::mat4(), glm::vec3(- i*FIR_SIZE, -PL + (j+1)*FIR_SIZE, 0));
+            createFir(systemRenderable, translateM, flatShader);
+        }
+    }
+
+    // Firs on highPlane
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 11; j++) {
+            translateM = glm::translate(glm::mat4(), glm::vec3(-PS/2 +  (j+1)*FIR_SIZE, PL + LPL*COS_45 - (i+1)*FIR_SIZE, LPL*COS_45));
+            createFir(systemRenderable, translateM, flatShader);
+        }
+    }
 
     glm::vec3 px,pv;
     float pm, pr;
@@ -194,11 +252,12 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
     //Particle vs Particle collision
     {
         // Initialization snow
-        int nb_snowball = 200;
+        int nb_snowball = 2000;
         ParticleRenderablePtr snowBallRenderable;
+
         for (int i = 1; i < nb_snowball; i++) {
-            px = glm::vec3(frand_a_b(-PS, PS), frand_a_b(-PS, PS), 10.0); //frand_a_b(0.025, 3.0));
-            pv = glm::vec3(2.0, 0.0, 0.0);
+            px = glm::vec3(frand_a_b(-PS, PS), frand_a_b(-PS, PS), frand_a_b(0.0, 50.0));
+            pv = glm::vec3(frand_a_b(-WIND, WIND), frand_a_b(-WIND, WIND), -10.0);
             pr = frand_a_b(0, SNOWBALL_RADIUS);
             pm = frand_a_b(0, 0.005);
             ParticlePtr snowball = std::make_shared<Particle>(px, pv, pm, pr);
@@ -211,6 +270,6 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
 
     //Initialize a force field that apply to all the particles of the system to simulate gravity
     //Add it to the system as a force field
-    ConstantForceFieldPtr gravityForceField = std::make_shared<ConstantForceField>(system->getParticles(), glm::vec3{0,0,-10} );
-    system->addForceField(gravityForceField);
+    // ConstantForceFieldPtr gravityForceField = std::make_shared<ConstantForceField>(system->getParticles(), glm::vec3{0,0,-10} );
+    // system->addForceField(gravityForceField);
 }

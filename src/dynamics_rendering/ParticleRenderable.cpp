@@ -14,6 +14,8 @@ ParticleRenderable::~ParticleRenderable()
     glcheck(glDeleteBuffers(1, &m_nBuffer));
 }
 
+double frand_a_b(double a, double b);
+
 ParticleRenderable::ParticleRenderable(ShaderProgramPtr shaderProgram, ParticlePtr particle) :
     HierarchicalRenderable(shaderProgram),
     m_particle(particle),
@@ -111,7 +113,18 @@ void ParticleRenderable::do_draw()
     const float& pRadius = m_particle->getRadius();
     const glm::vec3& pPosition = m_particle->getPosition();
     glm::mat4 scale = glm::scale(glm::mat4(1.0), glm::vec3(pRadius));
-    glm::mat4 translate = glm::translate(glm::mat4(1.0), glm::vec3(pPosition));
+    float x, y, z;
+    x = pPosition[0];
+    y = pPosition[1];
+    z = pPosition[2];
+    if (z < 0) {
+        x = frand_a_b(-30.0, 30.0);
+        y = frand_a_b(-30.0, 30.0);
+        z = -z;
+        z = 50.0 - (z - (((float) ((int) z) / 50) * 50.0));
+    }
+    glm::mat4 translate = glm::translate(glm::mat4(1.0), glm::vec3(x, y, z));
+    m_particle->setPosition(glm::vec3(x, y, z));
     setLocalTransform(translate*scale);
 
     //Draw geometric data
