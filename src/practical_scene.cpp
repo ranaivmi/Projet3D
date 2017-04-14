@@ -276,70 +276,134 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
         }
 
 
-        
-	{    
+
+	       {
           // Initialization of the target
+	           std::string filename;
+	           filename = "../textures/cible.png";
+	           auto cylinder = std::make_shared<KeyframedCylinderRenderable>(texShader,filename);
+              // cylinder->setLocalTransform(glm::rotate(glm::mat4(1.0),(float)(M_PI/2.0), glm::vec3(1,0,0)) * glm::scale(glm::mat4(1.0),glm::vec3(1.0,1.0,0.125)) * glm::translate(glm::mat4(1.0),glm::vec3(0,5,-60)));
+            cylinder->setParentTransform(glm::mat4(1.0));
+            int n = 5;
+            for (int i = 0; i < n; i++) {
+                cylinder->addParentTransformKeyframe(0.5 + 2*i, GeometricTransformation(glm::vec3(2.0, 0.0, 0.0)));
+                cylinder->addParentTransformKeyframe(1.5 + 2*i, GeometricTransformation(glm::vec3(-2.0, 0.0, 0.0)));
+  	      }
+  	       cylinder->setMaterial(Material::Pearl());
+            viewer.addRenderable(cylinder);
 
-	  std::string filename;
-	  filename = "../textures/cible.png";
-	  auto cylinder = std::make_shared<KeyframedCylinderRenderable>(texShader,filename);
-          cylinder->setLocalTransform(glm::rotate(glm::mat4(1.0),(float)(M_PI/2.0), glm::vec3(1,0,0)) * glm::scale(glm::mat4(1.0),glm::vec3(1.0,1.0,0.125)) * glm::translate(glm::mat4(1.0),glm::vec3(0,5,-60)));
+
+         // Création de la target en tant qu'ensemble de particules
+          std::vector<ParticlePtr> particulesSansPoids;
+          //ConstantForceFieldPtr gravityForceField
+          //  = std::make_shared<ConstantForceField>(particulesSansPoids, glm::vec3{0, 0, 10} );
+          //system->addForceField(gravityForceField);
+
+
+          cylinder->setLocalTransform((glm::rotate(glm::mat4(1.0), (float)(M_PI/2.0), glm::vec3(1,0,0)) * glm::scale(glm::mat4(1.0), glm::vec3(0.5,0.5,0.125)) * glm::translate(glm::mat4(1.0), glm::vec3(0,10,-60))) * cylinder->getModelMatrix());
+          //cylinder->setModelMatrix(glm::rotate(glm::mat4(1.0), (float)(M_PI/2.0), glm::vec3(1,0,0)) * glm::translate(glm::mat4(1.0), glm::vec3(0,1,7.5)));
           cylinder->setParentTransform(glm::mat4(1.0));
-          int n = 5;
-          for (int i = 0; i < n; i++) {
-              cylinder->addParentTransformKeyframe(0.5 + 2*i, GeometricTransformation(glm::vec3(2.0, 0.0, 0.0)));
-              cylinder->addParentTransformKeyframe(1.5 + 2*i, GeometricTransformation(glm::vec3(-2.0, 0.0, 0.0)));
-	      }
-	  cylinder->setMaterial(Material::Pearl());
-          viewer.addRenderable(cylinder);
+          // Constantes des particules
+          float R = 0.5;
+          float r = 0.05;
+          float epsilon = 0.01;
+          pv = glm::vec3(0.0, 0.0, 0.0);
+          pm = 1.0;
+          px = glm::vec3(0.0, 0.0, r + 0.01);
 
-        }
+          // Particule au centre
+          ParticlePtr particule = std::make_shared<Particle>(px, pv, pm, r - epsilon);
+          system->addParticle(particule);
+            particulesSansPoids.push_back(particule);
+            ParticleRenderablePtr particuleRenderable  = std::make_shared<ParticleRenderable>(flatShader, particule);
+            HierarchicalRenderable::addChild(systemRenderable, particuleRenderable);
+            HierarchicalRenderable::addChild(cylinder, particuleRenderable);
 
-        {
-          // Initilization of the ball
-          glm::vec3 px(0.0, 0.0, 0.0);
-          glm::vec3 pv(0.0, 0.0, 0.0);
-          float pm = 1.0, pr = 0.1;
-          px = glm::vec3(0.0,0.0,1.0);
-          ParticlePtr mobile = std::make_shared<Particle>( px, pv, pm, pr);
-          system->addParticle( mobile );
+            // Particules autour
+            int nb_cercles = (R-r) / (2 * r);
+            int i = 1;
+            while (i <= nb_cercles) {
+                float cur_theta = 0;
+                float R = 2.0 * (float) i * r;
+                float theta = 2.0 * asin(r / R);
+                while (cur_theta < 2 * M_PI && cur_theta  < ( 2 * M_PI - theta)) { // 2e Condition ?
+                    px = glm::vec3(2.0 * (float) i * r * cos(cur_theta), 2.0 * (float) i * r * sin(cur_theta), r + 0.01);
+                    ParticlePtr particule = std::make_shared<Particle>(px, pv, pm, r - epsilon);
+                    system->addParticle(particule);
+                    particulesSansPoids.push_back(particule);
+                    ParticleRenderablePtr particuleRenderable  = std::make_shared<ParticleRenderable>(flatShader, particule);
+                    HierarchicalRenderable::addChild(systemRenderable, particuleRenderable);
+                    HierarchicalRenderable::addChild(cylinder, particuleRenderable);
+                    particuleRenderable->setParentTransform(glm::rotate(glm::mat4(1.0), (float)(M_PI/2.0), glm::vec3(1,0,0)) * glm::translate(glm::mat4(1.0), glm::vec3(0,5,-7.5)));
+                    cur_theta += (theta);
+                }
+                i++;
+            }
 
-          ParticleRenderablePtr mobileRenderable = std::make_shared<ParticleRenderable>(flatShader, mobile);
-          HierarchicalRenderable::addChild(systemRenderable, mobileRenderable);
+            ConstantForceFieldPtr gravityForceField
+              = std::make_shared<ConstantForceField>(particulesSansPoids, glm::vec3{0, 0, 10} );
+            system->addForceField(gravityForceField);
+            // Fin création ens
 
-          //Initialize a force field that apply only to the mobile particle
-          glm::vec3 nullForce(0.0, 0.0, 0.0);
-          std::vector<ParticlePtr> vParticle;
-          vParticle.push_back(mobile);
-	  ConstantForceFieldPtr force = std::make_shared<ConstantForceField>(vParticle, nullForce);
-          system->addForceField(force);
+            //cylinder->setModelMatrix(glm::rotate(glm::mat4(1.0), (float)(M_PI/2.0), glm::vec3(1,0,0)) );
 
-          //Initialize a renderable for the force field applied on the mobile particle.
-          //This renderable allows to modify the attribute of the force by key/mouse events
-          //Add this renderable to the systemRenderable.
-          ControlledForceFieldRenderablePtr forceRenderable = std::make_shared<ControlledForceFieldRenderable>(flatShader, force);
-          HierarchicalRenderable::addChild(systemRenderable, forceRenderable);
-
-          //Add a damping force field to the mobile.
-          DampingForceFieldPtr dampingForceField = std::make_shared<DampingForceField>(vParticle, 0.9);
-          system->addForceField(dampingForceField);
+            //cylinder->setLocalTransform((glm::rotate(glm::mat4(1.0), (float)(M_PI/2.0), glm::vec3(1,0,0)) * glm::scale(glm::mat4(1.0), glm::vec3(0.5,0.5,0.125)) * glm::translate(glm::mat4(1.0), glm::vec3(0,1,7.\
+  5))) * cylinder->getModelMatrix());
+            //cylinder->setParentTransform(glm::mat4(1.0));
 
 
-        }  
-    // Define a directional light for the whole scene
-    glm::vec3 lightDirection = glm::normalize(glm::vec3(0.0, 1.0,-1.));
-    glm::vec3 ghostWhite(248.0/255, 248.0/255, 1.0);
-    DirectionalLightPtr directionalLight =
-        std::make_shared<DirectionalLight>(lightDirection, ghostWhite, ghostWhite, ghostWhite);
-    viewer.setDirectionalLight(directionalLight);
-    // Add a renderable to display the light and control it via mouse/key event
-    glm::vec3 lightPosition(0.0, 5.0, 8.0);
-    DirectionalLightRenderablePtr directionalLightRenderable
-        = std::make_shared<DirectionalLightRenderable>(flatShader, directionalLight, lightPosition);
-    glm::mat4 localTransformation = glm::scale(glm::mat4(1.0), glm::vec3(0.5, 0.5, 0.5));
-    directionalLightRenderable->setLocalTransform(localTransformation);
-    viewer.addRenderable(directionalLightRenderable);
-    
+
+          }
+
+          {
+            // Initilization of the ball
+            glm::vec3 px(0.0, 0.0, 0.0);
+            glm::vec3 pv(0.0, 0.0, 0.0);
+            float pm = 1.0, pr = 0.1;
+            px = glm::vec3(0.0,0.0,1.0);
+            ParticlePtr mobile = std::make_shared<Particle>( px, pv, pm, pr);
+            system->addParticle( mobile );
+
+            ParticleRenderablePtr mobileRenderable = std::make_shared<ParticleRenderable>(flatShader, mobile);
+            HierarchicalRenderable::addChild(systemRenderable, mobileRenderable);
+
+            //Initialize a force field that apply only to the mobile particle
+            glm::vec3 nullForce(0.0, 0.0, 0.0);
+            std::vector<ParticlePtr> vParticle;
+            vParticle.push_back(mobile);
+  	        ConstantForceFieldPtr force = std::make_shared<ConstantForceField>(vParticle, nullForce);
+            system->addForceField(force);
+
+            //Initialize a renderable for the force field applied on the mobile particle.
+            //This renderable allows to modify the attribute of the force by key/mouse events
+            //Add this renderable to the systemRenderable.
+            ControlledForceFieldRenderablePtr forceRenderable = std::make_shared<ControlledForceFieldRenderable>(flatShader, force);
+            HierarchicalRenderable::addChild(systemRenderable, forceRenderable);
+
+            //Add a damping force field to the mobile.
+            DampingForceFieldPtr dampingForceField = std::make_shared<DampingForceField>(vParticle, 0.9);
+            system->addForceField(dampingForceField);
+
+
+          }
+
+          {
+            // Define a directional light for the whole scene
+            glm::vec3 lightDirection = glm::normalize(glm::vec3(0.0, 1.0,-1.));
+            glm::vec3 ghostWhite(248.0/255, 248.0/255, 1.0);
+            DirectionalLightPtr directionalLight =
+                std::make_shared<DirectionalLight>(lightDirection, ghostWhite, ghostWhite, ghostWhite);
+            viewer.setDirectionalLight(directionalLight);
+            // Add a renderable to display the light and control it via mouse/key event
+            glm::vec3 lightPosition(0.0, 5.0, 8.0);
+            DirectionalLightRenderablePtr directionalLightRenderable
+                = std::make_shared<DirectionalLightRenderable>(flatShader, directionalLight, lightPosition);
+            glm::mat4 localTransformation = glm::scale(glm::mat4(1.0), glm::vec3(0.5, 0.5, 0.5));
+            directionalLightRenderable->setLocalTransform(localTransformation);
+            viewer.addRenderable(directionalLightRenderable);
+
+      }
+
     // Position the camera
 //    viewer.getCamera().setViewMatrix(
   //      glm::lookAt(glm::vec3(0, -8, 7), glm::vec3(0, 0, 4), glm::vec3(0, 0, 1)) );
@@ -348,7 +412,7 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
     //Add it to the system as a force field
     ConstantForceFieldPtr gravityForceField = std::make_shared<ConstantForceField>(system->getParticles(), glm::vec3{0,0,-10} );
     system->addForceField(gravityForceField);
- 
+
 
         // End Snow
 
@@ -358,4 +422,3 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
     //gravityForceField = std::make_shared<ConstantForceField>(system->getParticles(), glm::vec3{0,0,-10} );
     //system->addForceField(gravityForceField);
 }
-
