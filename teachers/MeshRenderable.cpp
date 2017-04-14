@@ -17,7 +17,7 @@ teachers::MeshRenderable::MeshRenderable(ShaderProgramPtr shaderProgram, const s
     read_obj(filename, m_positions, m_indices, m_normals, m_texCoords);
     m_colors.resize(m_positions.size());
     for(unsigned int i = 0; i < m_colors.size(); ++i)
-        m_colors[i] = randomColor();
+        m_colors[i] = glm::vec4(1.0); //randomColor();
 
     //Create buffers
     glGenBuffers(1, &m_pBuffer);  // positions

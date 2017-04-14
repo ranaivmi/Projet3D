@@ -18,6 +18,10 @@ float random(float a, float b)
     return distribution(generator);
 }
 
+double frand_a_b(double a, double b) {
+    return ( rand()/(double)RAND_MAX ) * (b-a) + a;
+}
+
 glm::vec4 randomColor()
 {
     uniform_real_distribution<> distribution(0,360);

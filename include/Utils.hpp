@@ -16,6 +16,8 @@
  * @return The random number generated. */
 float random(float a, float b);
 
+double frand_a_b(double a, double b);
+
 /** @brief Get a random valid color.
  *
  * This function creates for you a random color you can use to render your vertices.

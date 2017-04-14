@@ -19,6 +19,7 @@
 #include "../include/dynamics_rendering/ControlledForceFieldRenderable.hpp"
 #include "../include/dynamics_rendering/QuadRenderable.hpp"
 #include "../include/texturing/TexturedPlaneRenderable.hpp"
+#include "../include/lighting/LightedMeshRenderable.hpp"
 #include "../include/texturing/TexturedMeshRenderable.hpp"
 #include "../include/lighting/DirectionalLightRenderable.hpp"
 #include "../include/keyframes/GeometricTransformation.hpp"
@@ -114,10 +115,6 @@ void initialize_practical_07_scene(Viewer& viewer, unsigned int scene_to_load)
     viewer.startAnimation();
 }
 
-double frand_a_b(double a, double b) {
-    return ( rand()/(double)RAND_MAX ) * (b-a) + a;
-}
-
 void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderablePtr &systemRenderable)
 {
     //Initialize a shader for the following renderables
@@ -134,7 +131,7 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
     system->setDt(0.0250);
 
     //Activate collision detection
-    system->setCollisionsDetection(false);
+    system->setCollisionsDetection(true);
 
     //Initialize the restitution coefficient for collision
     //1.0 = full elastic response
@@ -151,7 +148,7 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
     DirectionalLightPtr directionalLight = std::make_shared<DirectionalLight>(d_direction, d_ambient, d_diffuse, d_specular);
     //Add a renderable to display the light and control it via mouse/key event
     glm::vec3 lightPosition(0.0,0.0,50.0);
-    DirectionalLightRenderablePtr directionalLightRenderable = std::make_shared<DirectionalLightRenderable>(phongShader, directionalLight, lightPosition);
+    DirectionalLightRenderablePtr directionalLightRenderable = std::make_shared<DirectionalLightRenderable>(flatShader, directionalLight, lightPosition);
     localTransformation = glm::scale(glm::mat4(1.0), glm::vec3(0.5,0.5,0.5));
     directionalLightRenderable->setLocalTransform(localTransformation);
     viewer.setDirectionalLight(directionalLight);
@@ -253,22 +250,34 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
     {
         // Initialization snow
 
-        TexturedMeshRenderablePtr meshBall = std::make_shared<TexturedMeshRenderable>(texShader, "../meshes/sphere.obj", "../textures/grass_texture.png");
-        scaleTransformation = glm::translate(glm::mat4(1.0), glm::vec3(0.0, -PL, 13.0)) * glm::scale(glm::mat4(1.0), glm::vec3(100.0, SNOWBALL_RADIUS, SNOWBALL_RADIUS));
-        meshBall->setMaterial(pearl);
-        meshBall->setLocalTransform(scaleTransformation);
-        meshBall->setParentTransform(glm::mat4(1.0));
-        HierarchicalRenderable::addChild(systemRenderable, meshBall);
+        std::string objFilename = "../meshes/farmhouse.obj";
+        std::string texFilename = "../textures/farmhouse_texture.jpg";
+        TexturedMeshRenderablePtr house = std::make_shared<TexturedMeshRenderable>(texShader, objFilename, texFilename);
+        scaleTransformation = glm::rotate(glm::mat4(1.0), (float) (M_PI/2.0),glm::vec3(1.0, 0.0, 0.0)) * glm::translate(glm::mat4(1.0), glm::vec3(-15.0, LPL*COS_45, -11.0)) * glm::scale(glm::mat4(1.0), glm::vec3(SNOWBALL_RADIUS, SNOWBALL_RADIUS, SNOWBALL_RADIUS));
+        scaleTransformation = glm::rotate(scaleTransformation, (float) (M_PI/2.0),glm::vec3(0.0, -1.0, 0.0));
+        //meshBall->setLocalTransform(scaleTransformation);
+        //house->setMaterial(pearl);
+        house->setParentTransform(scaleTransformation);
+        HierarchicalRenderable::addChild(systemRenderable, house);
+        //viewer.addRenderable(house);
 
-        int nb_snowball = 2000;
+
+        objFilename = "../meshes/sphere.obj";
+        LightedMeshRenderablePtr meshBall = std::make_shared<LightedMeshRenderable>(flatShader, objFilename, pearl);
+        scaleTransformation = glm::translate(glm::mat4(1.0), glm::vec3(0.0, -PL + 5.0, 3.0)) * glm::scale(glm::mat4(1.0), glm::vec3(SNOWBALL_RADIUS, SNOWBALL_RADIUS, SNOWBALL_RADIUS));
+        meshBall->setParentTransform(scaleTransformation);
+        HierarchicalRenderable::addChild(systemRenderable, meshBall);
+        viewer.addRenderable(meshBall);
+
+        int nb_snowball = 100;
         SnowballParticleRenderablePtr snowBallRenderable;
         for (int i = 1; i < nb_snowball; i++) {
             px = glm::vec3(frand_a_b(-PS, PS), frand_a_b(-PS, PS), frand_a_b(0.0, 50.0));
             pv = glm::vec3(frand_a_b(-WIND, WIND), frand_a_b(-WIND, WIND), -10.0);
             pr = frand_a_b(0, SNOWBALL_RADIUS);
-            pm = frand_a_b(0, 0.00005);
+            pm = frand_a_b(0, 0.05);
             ParticlePtr snowball = std::make_shared<Particle>(px, pv, pm, pr);
-            snowball->setForce(glm::vec3(0.0, 0.0, 10.0));
+            //snowball->setForce(glm::vec3(0.0, 0.0, 0.0));
             system->addParticle(snowball);
             snowBallRenderable = std::make_shared<SnowballParticleRenderable>(flatShader, snowball);
             HierarchicalRenderable::addChild(systemRenderable, snowBallRenderable);

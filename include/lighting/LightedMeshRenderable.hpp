@@ -1,6 +1,8 @@
 #ifndef LIGHTED_MESH_RENDERABLE_HPP
 #define LIGHTED_MESH_RENDERABLE_HPP
 
+#include "../../include/Viewer.hpp"
+#include "../../include/Utils.hpp"
 #include "./../lighting/Materiable.hpp"
 #include "./../../teachers/MeshRenderable.hpp"
 
@@ -16,6 +18,10 @@ public:
 protected:
     void do_draw();
     void do_animate(float time);
+
+private:
+    float z;
+    float last_time;
 };
 
 typedef std::shared_ptr<LightedMeshRenderable> LightedMeshRenderablePtr;
