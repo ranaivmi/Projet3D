@@ -550,8 +550,8 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
           ConstantForceFieldPtr gravityForceField
             = std::make_shared<ConstantForceField>(particules, glm::vec3{0, 0, 10} );
           system->addForceField(gravityForceField);
-          float R = 1.0;
-          float r = 10;
+          float R = 2.0;
+          float r = 1.0;
           float p = 4 * M_PI * r;
           float theta = 2 * asin(r / R);
           float L = theta * R;
