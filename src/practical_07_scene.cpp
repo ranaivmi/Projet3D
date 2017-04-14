@@ -551,9 +551,13 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
           //  = std::make_shared<ConstantForceField>(particulesSansPoids, glm::vec3{0, 0, 10} );
           //system->addForceField(gravityForceField);
 
+
+          cylinder->setLocalTransform((glm::scale(glm::mat4(1.0), glm::vec3(0.5,0.5,0.125)) * glm::translate(glm::mat4(1.0), glm::vec3(0,1,7.5))) * cylinder->getModelMatrix());
+          //cylinder->setModelMatrix(glm::rotate(glm::mat4(1.0), (float)(M_PI/2.0), glm::vec3(1,0,0)) * glm::translate(glm::mat4(1.0), glm::vec3(0,1,7.5)));
+          cylinder->setParentTransform(glm::mat4(1.0));
           // Constantes des particules
           float R = 0.5;
-          float r = 0.025;
+          float r = 0.05;
           float epsilon = 0.01;
           pv = glm::vec3(0.0, 0.0, 0.0);
           pm = 1.0;
@@ -582,7 +586,7 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
                   ParticleRenderablePtr particuleRenderable  = std::make_shared<ParticleRenderable>(flatShader, particule);
                   HierarchicalRenderable::addChild(systemRenderable, particuleRenderable);
                   HierarchicalRenderable::addChild(cylinder, particuleRenderable);
-                  particuleRenderable->setLocalTransform(glm::rotate(glm::mat4(1.0), (float)(M_PI/2.0), glm::vec3(1,0,0)));
+                  particuleRenderable->setParentTransform(glm::rotate(glm::mat4(1.0), (float)(M_PI/2.0), glm::vec3(1,0,0)) * glm::translate(glm::mat4(1.0), glm::vec3(0,1,0)));
                   cur_theta += (theta);
               }
               i++;
@@ -593,9 +597,13 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
           system->addForceField(gravityForceField);
           // Fin création ens
 
+          //cylinder->setModelMatrix(glm::rotate(glm::mat4(1.0), (float)(M_PI/2.0), glm::vec3(1,0,0)) );
 
-          cylinder->setLocalTransform(glm::rotate(glm::mat4(1.0), (float)(M_PI/2.0), glm::vec3(1,0,0)) * glm::scale(glm::mat4(1.0), glm::vec3(0.5,0.5,0.125)) * glm::translate(glm::mat4(1.0), glm::vec3(0,1,7.5)));
-          cylinder->setParentTransform(glm::mat4(1.0));
+          //cylinder->setLocalTransform((glm::rotate(glm::mat4(1.0), (float)(M_PI/2.0), glm::vec3(1,0,0)) * glm::scale(glm::mat4(1.0), glm::vec3(0.5,0.5,0.125)) * glm::translate(glm::mat4(1.0), glm::vec3(0,1,7.5))) * cylinder->getModelMatrix());
+          //cylinder->setParentTransform(glm::mat4(1.0));
+
+
+          // Ajout des Keyframes
           int n = 5;
           for (int i = 0; i < n; i++) {
               cylinder->addParentTransformKeyframe(0.5 + 2*i, GeometricTransformation(glm::vec3(2.0, 0.0, 0.0)));
