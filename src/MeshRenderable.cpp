@@ -1,33 +1,29 @@
-#include "./../../include/lighting/PointLightRenderable.hpp"
-#include "./../../include/gl_helper.hpp"
-#include "./../../include/log.hpp"
-#include "./../../include/formes/Geometries.hpp"
+#include "./../include/MeshRenderable.hpp"
+#include "./../include/gl_helper.hpp"
+#include "./../include/log.hpp"
+#include "./../include/Io.hpp"
+#include "./../include/Utils.hpp"
 
-#include <glm/gtx/quaternion.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include <GL/glew.h>
+#include <iostream>
 
-PointLightRenderable::PointLightRenderable(ShaderProgramPtr shaderProgram, PointLightPtr light) :
-    HierarchicalRenderable(shaderProgram), m_light(light),
-    m_pBuffer(0), m_cBuffer(0), m_nBuffer(0)
+formes::MeshRenderable::MeshRenderable(ShaderProgramPtr shaderProgram, const std::string& filename) :
+    HierarchicalRenderable(shaderProgram),
+    m_pBuffer(0), m_cBuffer(0), m_nBuffer(0), m_iBuffer(0)
 {
-    std::vector<glm::vec3> tmp_x, tmp_n;
-    unsigned int strips=20, slices=20;
-    glm::mat4 transformation(1.0);
+    std::cerr << "Hey, teacher, leave them kids alone! -- Mesh" << std::endl;
 
-    formes::getUnitSphere(tmp_x, tmp_n, strips, slices);
-    m_positions.insert(m_positions.end(), tmp_x.begin(), tmp_x.end());
-    m_normals.insert(m_normals.end(), tmp_n.begin(), tmp_n.end());
-    m_colors.resize(m_positions.size(), glm::vec4(light->diffuse(),1.0));
-
-    transformation = glm::translate(glm::mat4(1.0), m_light->position());
-    setParentTransform(transformation);
+    read_obj(filename, m_positions, m_indices, m_normals, m_texCoords);
+    m_colors.resize(m_positions.size());
+    for(unsigned int i = 0; i < m_colors.size(); ++i)
+        m_colors[i] = glm::vec4(1.0); //randomColor();
 
     //Create buffers
-    glGenBuffers(1, &m_pBuffer); //vertices
-    glGenBuffers(1, &m_cBuffer); //colors
-    glGenBuffers(1, &m_nBuffer); //normals
+    glGenBuffers(1, &m_pBuffer);  // positions
+    glGenBuffers(1, &m_cBuffer);  // colors
+    glGenBuffers(1, &m_nBuffer);  // normals
+    glGenBuffers(1, &m_iBuffer);  // indices
 
     //Activate buffer and send data to the graphics card
     glcheck(glBindBuffer(GL_ARRAY_BUFFER, m_pBuffer));
@@ -36,68 +32,64 @@ PointLightRenderable::PointLightRenderable(ShaderProgramPtr shaderProgram, Point
     glcheck(glBufferData(GL_ARRAY_BUFFER, m_colors.size()*sizeof(glm::vec4), m_colors.data(), GL_STATIC_DRAW));
     glcheck(glBindBuffer(GL_ARRAY_BUFFER, m_nBuffer));
     glcheck(glBufferData(GL_ARRAY_BUFFER, m_normals.size()*sizeof(glm::vec3), m_normals.data(), GL_STATIC_DRAW));
+    glcheck(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_iBuffer));
+    glcheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_indices.size()*sizeof(unsigned int), m_indices.data(), GL_STATIC_DRAW));
 }
 
-void PointLightRenderable::do_draw()
+formes::MeshRenderable::~MeshRenderable()
 {
-    //Location
+    glcheck(glDeleteBuffers(1, &m_pBuffer));
+    glcheck(glDeleteBuffers(1, &m_cBuffer));
+    glcheck(glDeleteBuffers(1, &m_nBuffer));
+    glcheck(glDeleteBuffers(1, &m_iBuffer));
+}
+
+void formes::MeshRenderable::do_draw()
+{
     int positionLocation = m_shaderProgram->getAttributeLocation("vPosition");
     int colorLocation = m_shaderProgram->getAttributeLocation("vColor");
     int normalLocation = m_shaderProgram->getAttributeLocation("vNormal");
+
     int modelLocation = m_shaderProgram->getUniformLocation("modelMat");
 
-    //Send data to GPU
     if(modelLocation != ShaderProgram::null_location)
-    {
         glcheck(glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(getModelMatrix())));
-    }
 
-    if(positionLocation != ShaderProgram::null_location)
-    {
-        //Activate location
+    if(positionLocation != ShaderProgram::null_location) {
         glcheck(glEnableVertexAttribArray(positionLocation));
-        //Bind buffer
         glcheck(glBindBuffer(GL_ARRAY_BUFFER, m_pBuffer));
-        //Specify internal format
         glcheck(glVertexAttribPointer(positionLocation, 3, GL_FLOAT, GL_FALSE, 0, (void*)0));
     }
 
-    if(colorLocation != ShaderProgram::null_location)
-    {
+    if(colorLocation != ShaderProgram::null_location) {
         glcheck(glEnableVertexAttribArray(colorLocation));
         glcheck(glBindBuffer(GL_ARRAY_BUFFER, m_cBuffer));
         glcheck(glVertexAttribPointer(colorLocation, 4, GL_FLOAT, GL_FALSE, 0, (void*)0));
     }
 
-    if(normalLocation != ShaderProgram::null_location)
-    {
+    if(normalLocation != ShaderProgram::null_location) {
         glcheck(glEnableVertexAttribArray(normalLocation));
         glcheck(glBindBuffer(GL_ARRAY_BUFFER, m_nBuffer));
         glcheck(glVertexAttribPointer(normalLocation, 3, GL_FLOAT, GL_FALSE, 0, (void*)0));
     }
 
     //Draw triangles elements
-    glcheck(glDrawArrays(GL_TRIANGLES,0, m_positions.size()));
+    glcheck(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_iBuffer));
+    glcheck(glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT, (void*)0));
 
-    if(positionLocation != ShaderProgram::null_location)
-    {
+    if(positionLocation != ShaderProgram::null_location) {
         glcheck(glDisableVertexAttribArray(positionLocation));
     }
-    if(colorLocation != ShaderProgram::null_location)
-    {
+
+    if(colorLocation != ShaderProgram::null_location) {
         glcheck(glDisableVertexAttribArray(colorLocation));
     }
-    if(normalLocation != ShaderProgram::null_location)
-    {
+
+    if(normalLocation != ShaderProgram::null_location) {
         glcheck(glDisableVertexAttribArray(normalLocation));
     }
 }
 
-void PointLightRenderable::do_animate(float /*time*/) {}
-
-PointLightRenderable::~PointLightRenderable()
+void formes::MeshRenderable::do_animate(float time)
 {
-    glcheck(glDeleteBuffers(1, &m_pBuffer));
-    glcheck(glDeleteBuffers(1, &m_cBuffer));
-    glcheck(glDeleteBuffers(1, &m_nBuffer));
 }

@@ -1,7 +1,7 @@
 #include "./../../include/lighting/SpotLightRenderable.hpp"
 #include "./../../include/gl_helper.hpp"
 #include "./../../include/log.hpp"
-#include "./../../teachers/Geometries.hpp"
+#include "./../../include/formes/Geometries.hpp"
 
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -15,7 +15,7 @@ SpotLightRenderable::SpotLightRenderable(ShaderProgramPtr shaderProgram, SpotLig
     std::vector<glm::vec3> tmp_x, tmp_n;
     unsigned int strips=20, slices=20;
 
-    teachers::getUnitCone(tmp_x, tmp_n, strips, slices);
+    formes::getUnitCone(tmp_x, tmp_n, strips, slices);
     m_positions.insert(m_positions.end(), tmp_x.begin(), tmp_x.end());
     m_normals.insert(m_normals.end(), tmp_n.begin(), tmp_n.end());
     m_colors.resize(m_positions.size(), glm::vec4(light->diffuse(),1.0));

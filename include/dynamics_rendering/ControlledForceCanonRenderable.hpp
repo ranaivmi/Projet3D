@@ -1,22 +1,26 @@
-#ifndef CONTROLLED_FORCE_FIELD_RENDERABLE_HPP
-#define CONTROLLED_FORCE_FIELD_RENDERABLE_HPP
+#ifndef CONTROLLED_FORCE_CANON_RENDERABLE_HPP
+#define CONTROLLED_FORCE_CANON_RENDERABLE_HPP
 
 #include "../HierarchicalRenderable.hpp"
 #include "../dynamics/ConstantForceField.hpp"
 
+#include "../dynamics/DynamicSystem.hpp"
+#include "../dynamics/DynamicSystem.hpp"
+#include "./../../include/Viewer.hpp"
+#include "./../../include/dynamics_rendering/DynamicSystemRenderable.hpp"
 
-/**@brief Status of a ControlledForceField.
+/**@brief Status of a ControlledForceCanon.
  *
  * This status holds important variables that are used to control a force
  * field thanks to user inputs. You can (and should) adapt this class
  * and its default value to the kind of behavior you want in your project.
  */
-class ControlledForceFieldStatus
+class ControlledForceCanonStatus
 {
 public:
-    ControlledForceFieldStatus();
-    ControlledForceFieldStatus(const glm::vec3& initial_direction);
-    ~ControlledForceFieldStatus();
+    ControlledForceCanonStatus();
+    ControlledForceCanonStatus(const glm::vec3& initial_direction);
+    ~ControlledForceCanonStatus();
     void clear();
 
 public:
@@ -57,17 +61,17 @@ public:
  * this is the easiest way to do so. We derive from a hierarchical renderable to be able
  * to use the same local frame as the dynamic system using the force field (see DynamicSystemRenderable).
  */
-class ControlledForceFieldRenderable : public HierarchicalRenderable
+class ControlledForceCanonRenderable : public HierarchicalRenderable
 {
 public:
   /**@brief Build a new controlled force field renderable.
    *
    * Build a new controlled force field by user inputs.
    * @param program The shader program used to render the force applied to particles.
-   * @param forceField The force field to control with user inputs.
+   * @param forceCanon The force field to control with user inputs.
    */
-  ControlledForceFieldRenderable(ShaderProgramPtr program,ConstantForceFieldPtr forceField);
-  ~ControlledForceFieldRenderable();
+  ControlledForceCanonRenderable(ShaderProgramPtr program,ConstantForceFieldPtr forceCanon, DynamicSystemPtr system, DynamicSystemRenderablePtr systemRenderable);
+  ~ControlledForceCanonRenderable();
 
 private:
 
@@ -76,8 +80,11 @@ private:
   virtual void do_animate(float time);
   virtual void do_draw();
 
-  ControlledForceFieldStatus m_status;
+  ControlledForceCanonStatus m_status;
   ConstantForceFieldPtr m_force;
+  DynamicSystemPtr m_system;
+  ShaderProgramPtr m_program;
+  DynamicSystemRenderablePtr m_systemRenderable;
 
   std::vector<glm::vec3> m_positions;
   std::vector<glm::vec4> m_colors;
@@ -88,6 +95,6 @@ private:
   unsigned int m_nBuffer;
 };
 
-typedef std::shared_ptr<ControlledForceFieldRenderable> ControlledForceFieldRenderablePtr;
+typedef std::shared_ptr<ControlledForceCanonRenderable> ControlledForceCanonRenderablePtr;
 
-#endif //CONTROLLED_FORCE_FIELD_RENDERABLE_HPP
+#endif //CONTROLLED_FORCE_CANON_RENDERABLE_HPP

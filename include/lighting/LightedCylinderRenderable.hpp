@@ -2,13 +2,14 @@
 #define LIGHTED_CYLINDER_RENDERABLE_HPP
 
 #include "./../lighting/Materiable.hpp"
-#include "./../CylinderRenderable.hpp"
+#include "./../formes/CylinderRenderable.hpp"
+
 
 class LightedCylinderRenderable : public formes::CylinderRenderable, public Materiable
 {
 public:
     ~LightedCylinderRenderable();
-    LightedCylinderRenderable(ShaderProgramPtr program, const MaterialPtr& material);
+    LightedCylinderRenderable(ShaderProgramPtr program, const MaterialPtr& material = Material::Pearl());
 
 protected:
     void do_draw();

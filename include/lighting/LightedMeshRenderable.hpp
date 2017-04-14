@@ -4,11 +4,11 @@
 #include "../../include/Viewer.hpp"
 #include "../../include/Utils.hpp"
 #include "./../lighting/Materiable.hpp"
-#include "./../../teachers/MeshRenderable.hpp"
+#include "./../MeshRenderable.hpp"
 
 #include <string>
 
-class LightedMeshRenderable : public teachers::MeshRenderable, public Materiable
+class LightedMeshRenderable : public formes::MeshRenderable, public Materiable
 {
 public:
     ~LightedMeshRenderable();

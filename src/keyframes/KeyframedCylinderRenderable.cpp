@@ -3,14 +3,14 @@
 
 #include "../../include/gl_helper.hpp"
 #include "../../include/Utils.hpp"
-#include "../../teachers/Geometries.hpp"
+#include "../../include/formes/Geometries.hpp"
 
 #include <glm/gtc/type_ptr.hpp>
 #include <GL/glew.h>
 
 KeyframedCylinderRenderable::KeyframedCylinderRenderable(
-        ShaderProgramPtr prog, const MaterialPtr& material)
-    : LightedCylinderRenderable(prog, material)
+    ShaderProgramPtr prog,const std::string& textureFilename)
+    :TexturedCylinderRenderable(prog,textureFilename)
 {
 }
 
