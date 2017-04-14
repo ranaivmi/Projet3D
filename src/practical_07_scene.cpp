@@ -17,6 +17,7 @@
 #include "../include/dynamics_rendering/ControlledForceFieldRenderable.hpp"
 #include "../include/dynamics_rendering/QuadRenderable.hpp"
 
+#include "../include/texturing/TexturedCylinderRenderable.hpp"
 #include "../include/keyframes/KeyframedCylinderRenderable.hpp"
 #include "../include/keyframes/GeometricTransformation.hpp"
 #include "../include/lighting/DirectionalLightRenderable.hpp"
@@ -533,20 +534,37 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
             HierarchicalRenderable::addChild(systemRenderable, snowBallRenderable);
         }
 
-        {
+        
+	{    
           // Initialization of the target
-          ShaderProgramPtr phongShader = std::make_shared<ShaderProgram>(
-        "../shaders/phongVertex.glsl", "../shaders/phongFragment.glsl");
-          viewer.addShaderProgram(phongShader);
-          auto cylinder = std::make_shared<KeyframedCylinderRenderable>(phongShader, Material::Emerald());
-          cylinder->setLocalTransform(glm::rotate(glm::mat4(1.0), (float)(M_PI/2.0), glm::vec3(1,0,0)) * glm::scale(glm::mat4(1.0), glm::vec3(0.5,0.5,0.125)) * glm::translate(glm::mat4(1.0), glm::vec3(0,1,7.5)));
+
+	  ShaderProgramPtr texShader
+	      = std::make_shared<ShaderProgram>("../shaders/textureVertex.glsl",
+                                          "../shaders/textureFragment.glsl");
+	  viewer.addShaderProgram(texShader);
+          //Define a directional light for the whole scene
+	  /*glm::vec3 d_direction = glm::normalize(glm::vec3(0.0,-1.0,0.0));
+	  glm::vec3 d_ambient(1.0,1.0,1.0), d_diffuse(1.0,1.0,1.0), d_specular(1.0,1.0,1.0);
+	  DirectionalLightPtr directionalLight = std::make_shared<DirectionalLight>(d_direction, d_ambient, d_diffuse, d_specular);
+	  glm::vec3 lightPosition(0.0,0.0,0.0);
+	  DirectionalLightRenderablePtr directionalLightRenderable = std::make_shared<DirectionalLightRenderable>(flatShader, directionalLight, lightPosition);
+	  directionalLightRenderable->setLocalTransform(glm::scale(glm::mat4(1.0), glm::vec3(0.5,0.5,0.5)));
+	  viewer.addRenderable(directionalLightRenderable);
+          viewer.setDirectionalLight(directionalLight);*/
+
+	  std::string filename;
+	  filename = "../textures/cible.png";
+	  auto cylinder = std::make_shared<KeyframedCylinderRenderable>(texShader,filename);
+          cylinder->setLocalTransform((glm::rotate(glm::mat4(1.0), (float)(M_PI), glm::vec3(0,0,1))* glm::rotate(glm::mat4(1.0), (float)(M_PI/2.0), glm::vec3(1,0,0))) * glm::scale(glm::mat4(1.0), glm::vec3(0.5,0.5,0.125)) * glm::translate(glm::mat4(1.0), glm::vec3(0,1.0,-10.0)));
           cylinder->setParentTransform(glm::mat4(1.0));
           int n = 5;
           for (int i = 0; i < n; i++) {
               cylinder->addParentTransformKeyframe(0.5 + 2*i, GeometricTransformation(glm::vec3(2.0, 0.0, 0.0)));
               cylinder->addParentTransformKeyframe(1.5 + 2*i, GeometricTransformation(glm::vec3(-2.0, 0.0, 0.0)));
-          }
+	      }
+	  cylinder->setMaterial(Material::Pearl());
           viewer.addRenderable(cylinder);
+
         }
 
         {
@@ -579,7 +597,8 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
           system->addForceField(dampingForceField);
 
 
-        }  // Define a directional light for the whole scene
+        }  
+    // Define a directional light for the whole scene
     glm::vec3 lightDirection = glm::normalize(glm::vec3(0.0, -1.0, -1.0));
     glm::vec3 ghostWhite(248.0/255, 248.0/255, 1.0);
     DirectionalLightPtr directionalLight =
@@ -592,22 +611,14 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
     glm::mat4 localTransformation = glm::scale(glm::mat4(1.0), glm::vec3(0.5, 0.5, 0.5));
     directionalLightRenderable->setLocalTransform(localTransformation);
     viewer.addRenderable(directionalLightRenderable);
-
+    
     // Position the camera
 //    viewer.getCamera().setViewMatrix(
   //      glm::lookAt(glm::vec3(0, -8, 7), glm::vec3(0, 0, 4), glm::vec3(0, 0, 1)) );
     }
-    //La cible 
-    glm::mat4 scaleM(1.0);
-    glm::mat4 rotationM(1.0);
-    std::shared_ptr<formes::CylinderRenderable> Cible
-        = std::make_shared<formes::CylinderRenderable>(flatShader, 30);
-    scaleM = glm::scale(glm::mat4(), glm::vec3(0.5, 0.5, 0.1));
-    rotationM = glm::rotate(glm::mat4(1.0), (float)(M_PI/2.0), glm::vec3(1.0,0.0,0.0));
-    Cible->setModelMatrix(rotationM*scaleM);
-    viewer.addRenderable(Cible);
     //Initialize a force field that apply to all the particles of the system to simulate gravity
     //Add it to the system as a force field
     ConstantForceFieldPtr gravityForceField = std::make_shared<ConstantForceField>(system->getParticles(), glm::vec3{0,0,-10} );
     system->addForceField(gravityForceField);
+ 
 }
