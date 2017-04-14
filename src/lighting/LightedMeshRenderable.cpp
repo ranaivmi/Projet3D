@@ -3,8 +3,8 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
-#define WIND 0.3
-#define HIGH 50.0
+#define WIND 0.0
+#define HIGH 100.0
 #define VAR 30.0
 
 LightedMeshRenderable::~LightedMeshRenderable()
@@ -21,6 +21,7 @@ LightedMeshRenderable::LightedMeshRenderable(ShaderProgramPtr shaderProgram,
 
 void LightedMeshRenderable::LightedMeshRenderable::do_draw()
 {
+    //std::cout << "do_draw\n";
     //Send material to GPU as uniform
     Material::sendToGPU(m_shaderProgram, getMaterial());
 
@@ -41,19 +42,18 @@ void LightedMeshRenderable::LightedMeshRenderable::do_draw()
 
 void LightedMeshRenderable::do_animate(float time)
 {
+    //std::cout << "do_animate\n";
     float dz = 0.5;
-    float dt = time - last_time;
-    float x(0.0), y(0.0), newZ(0.0);
-    newZ -= dt * dz;
-    if (newZ < 0.0) {
-        x = frand_a_b(-VAR, VAR);
-        y = frand_a_b(-VAR, VAR);
-        newZ = -newZ;
-        newZ = HIGH - (newZ - (((float) ((int) newZ) / HIGH) * HIGH));
-    }
+    float dt = (time - last_time)*10;
     glm::mat4 transformation(1.0);
-    transformation =  glm::translate(glm::mat4(1.0), glm::vec3(frand_a_b(-WIND*dt, WIND*dt), frand_a_b(-WIND*dt, WIND*dt), newZ - z));
-    setLocalTransform(transformation);
-    z = newZ;
+    if (z < 0.0) {
+        z = HIGH;
+        transformation =  glm::translate(getParentTransform(), glm::vec3(0.0, 0.0, HIGH));
+    } else {
+        transformation =  glm::translate(getParentTransform(), glm::vec3(0.0, 0.0, -dz));
+    }
+    setParentTransform(transformation);
+    //setParentTransform(transformation);
+    z -= dz;
     last_time = time;
 }

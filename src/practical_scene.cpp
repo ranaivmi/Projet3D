@@ -37,9 +37,9 @@
 #define PS 50.0
 #define PL 25.0
 #define LPL PL/5
-#define SNOWBALL_RADIUS 0.25
-#define PH 3.0
+#define SNOWBALL_RADIUS 0.3
 #define COS_45 0.70710678118
+#define PH ((LPL) * (COS_45))
 #define FIR_SIZE 4.0
 #define WIND 10.0
 
@@ -253,7 +253,7 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
         std::string objFilename = "../meshes/farmhouse.obj";
         std::string texFilename = "../textures/farmhouse_texture.jpg";
         TexturedMeshRenderablePtr house = std::make_shared<TexturedMeshRenderable>(texShader, objFilename, texFilename);
-        scaleTransformation = glm::rotate(glm::mat4(1.0), (float) (M_PI/2.0),glm::vec3(1.0, 0.0, 0.0)) * glm::translate(glm::mat4(1.0), glm::vec3(-15.0, LPL*COS_45, -11.0)) * glm::scale(glm::mat4(1.0), glm::vec3(SNOWBALL_RADIUS, SNOWBALL_RADIUS, SNOWBALL_RADIUS));
+        scaleTransformation = glm::rotate(glm::mat4(1.0), (float) (M_PI/2.0),glm::vec3(1.0, 0.0, 0.0)) * glm::translate(glm::mat4(1.0), glm::vec3(-15.0, LPL*COS_45, -11.0)) * glm::scale(glm::mat4(1.0), glm::vec3(0.25, 0.25, 0.25));
         scaleTransformation = glm::rotate(scaleTransformation, (float) (M_PI/2.0),glm::vec3(0.0, -1.0, 0.0));
         //meshBall->setLocalTransform(scaleTransformation);
         //house->setMaterial(pearl);
@@ -263,24 +263,15 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
 
 
         objFilename = "../meshes/sphere.obj";
-        LightedMeshRenderablePtr meshBall = std::make_shared<LightedMeshRenderable>(flatShader, objFilename, pearl);
-        scaleTransformation = glm::translate(glm::mat4(1.0), glm::vec3(0.0, -PL + 5.0, 3.0)) * glm::scale(glm::mat4(1.0), glm::vec3(SNOWBALL_RADIUS, SNOWBALL_RADIUS, SNOWBALL_RADIUS));
-        meshBall->setParentTransform(scaleTransformation);
-        HierarchicalRenderable::addChild(systemRenderable, meshBall);
-        viewer.addRenderable(meshBall);
-
-        int nb_snowball = 100;
+        LightedMeshRenderablePtr meshBall;
+        //viewer.addRenderable(meshBall);
+        int nb_snowball = 1000;
         SnowballParticleRenderablePtr snowBallRenderable;
         for (int i = 1; i < nb_snowball; i++) {
-            px = glm::vec3(frand_a_b(-PS, PS), frand_a_b(-PS, PS), frand_a_b(0.0, 50.0));
-            pv = glm::vec3(frand_a_b(-WIND, WIND), frand_a_b(-WIND, WIND), -10.0);
-            pr = frand_a_b(0, SNOWBALL_RADIUS);
-            pm = frand_a_b(0, 0.05);
-            ParticlePtr snowball = std::make_shared<Particle>(px, pv, pm, pr);
-            //snowball->setForce(glm::vec3(0.0, 0.0, 0.0));
-            system->addParticle(snowball);
-            snowBallRenderable = std::make_shared<SnowballParticleRenderable>(flatShader, snowball);
-            HierarchicalRenderable::addChild(systemRenderable, snowBallRenderable);
+            meshBall = std::make_shared<LightedMeshRenderable>(flatShader, objFilename, pearl);
+            scaleTransformation = glm::translate(glm::mat4(1.0), glm::vec3(frand_a_b(-PS, PS), frand_a_b(-PS, PS), frand_a_b(0.0, 50.0))) * glm::scale(glm::mat4(1.0), glm::vec3(SNOWBALL_RADIUS, SNOWBALL_RADIUS, SNOWBALL_RADIUS));
+            meshBall->setParentTransform(scaleTransformation);
+            HierarchicalRenderable::addChild(systemRenderable, meshBall);
         }
 
 
@@ -389,8 +380,6 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
             //Add a damping force field to the mobile.
             //DampingForceFieldPtr dampingForceField = std::make_shared<DampingForceField>(vParticle, 0.9);
             //system->addForceField(dampingForceField);
-
-
           }
 
           {
@@ -445,9 +434,9 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
     // Define a directional light for the whole scene
     glm::vec3 lightDirection = glm::normalize(glm::vec3(0.0, 1.0,-1.));
     glm::vec3 ghostWhite(248.0/255, 248.0/255, 1.0);
-    DirectionalLightPtr directionalLight =
+    DirectionalLightPtr directionalLight2 =
         std::make_shared<DirectionalLight>(lightDirection, ghostWhite, ghostWhite, ghostWhite);
-    viewer.setDirectionalLight(directionalLight);
+    viewer.setDirectionalLight(directionalLight2);
 
     // Position the camera
 //    viewer.getCamera().setViewMatrix(
@@ -464,4 +453,3 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
     //Add it to the system as a force field
     //gravityForceField = std::make_shared<ConstantForceField>(system->getParticles(), glm::vec3{0,0,-10} );
     //system->addForceField(gravityForceField);
-}
