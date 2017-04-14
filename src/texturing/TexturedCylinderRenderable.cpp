@@ -1,6 +1,6 @@
 #include "../../include/texturing/TexturedCylinderRenderable.hpp"
 #include "../../include/gl_helper.hpp"
-#include "../../teachers/Geometries.hpp"
+#include "../../include/formes/Geometries.hpp"
 
 #include <glm/gtc/type_ptr.hpp>
 #include <GL/glew.h>
@@ -14,7 +14,7 @@ TexturedCylinderRenderable::TexturedCylinderRenderable(
       m_pBuffer(0), m_nBuffer(0), m_tBuffer(0), m_texId(0)
 {
     //Initialize geometry
-    teachers::getUnitCylinder(m_positions, m_normals,nb_Slices, m_texCoords);
+    formes::getUnitCylinder(m_positions, m_normals,nb_Slices, m_texCoords);
 
     // === PART 1: Vertex attributes, except texture coordinates
     //Create buffers

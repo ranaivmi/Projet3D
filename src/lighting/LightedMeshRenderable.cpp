@@ -26,7 +26,7 @@ void LightedMeshRenderable::do_draw()
     }
 
     // Call the super method to bind other uniforms/attributes & draw
-    teachers::MeshRenderable::do_draw();
+    formes::MeshRenderable::do_draw();
 
     if (nitLocation != ShaderProgram::null_location) {
         glcheck(glDisableVertexAttribArray(nitLocation));

@@ -1,4 +1,5 @@
-#include "./../../include/dynamics_rendering/ParticleRenderable.hpp"
+#include "./../../include/dynamics_rendering/SnowballParticleRenderable.hpp"
+
 #include "./../../include/gl_helper.hpp"
 #include "./../../include/log.hpp"
 #include "./../../include/Utils.hpp"
@@ -7,7 +8,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <GL/glew.h>
 
-ParticleRenderable::~ParticleRenderable()
+SnowballParticleRenderable::~SnowballParticleRenderable()
 {
     glcheck(glDeleteBuffers(1, &m_pBuffer));
     glcheck(glDeleteBuffers(1, &m_cBuffer));
@@ -16,7 +17,7 @@ ParticleRenderable::~ParticleRenderable()
 
 double frand_a_b(double a, double b);
 
-ParticleRenderable::ParticleRenderable(ShaderProgramPtr shaderProgram, ParticlePtr particle) :
+SnowballParticleRenderable::SnowballParticleRenderable(ShaderProgramPtr shaderProgram, ParticlePtr particle) :
     HierarchicalRenderable(shaderProgram),
     m_particle(particle),
     m_pBuffer(0), m_cBuffer(0), m_nBuffer(0)
@@ -107,13 +108,26 @@ ParticleRenderable::ParticleRenderable(ShaderProgramPtr shaderProgram, ParticleP
     glcheck(glBufferData(GL_ARRAY_BUFFER, m_normals.size()*sizeof(glm::vec3), m_normals.data(), GL_STATIC_DRAW));
 }
 
-void ParticleRenderable::do_draw()
+void SnowballParticleRenderable::do_draw()
 {
     //Update the parent and local transform matrix to position the geometric data according to the particle's data.
     const float& pRadius = m_particle->getRadius();
     const glm::vec3& pPosition = m_particle->getPosition();
     glm::mat4 scale = glm::scale(glm::mat4(1.0), glm::vec3(pRadius));
-    glm::mat4 translate = glm::translate(glm::mat4(1.0), glm::vec3(pPosition));
+    float x, y, z;
+    x = pPosition[0];
+    y = pPosition[1];
+    z = pPosition[2];
+    if (z < 0) {
+        x = frand_a_b(-30.0, 30.0);
+        y = frand_a_b(-30.0, 30.0);
+        z = -z;
+        z = 50.0 - (z - (((float) ((int) z) / 50) * 50.0));
+    }
+    glm::mat4 translate = glm::translate(glm::mat4(1.0), glm::vec3(x, y, z));
+    m_particle->setPosition(glm::vec3(x, y, z));
+    glm::vec3 currentVelocity = m_particle->getVelocity();
+    m_particle->setVelocity(glm::vec3(currentVelocity[0], currentVelocity[1], -10.0));
     setLocalTransform(translate*scale);
 
     //Draw geometric data
@@ -158,5 +172,5 @@ void ParticleRenderable::do_draw()
     }
 }
 
-void ParticleRenderable::do_animate(float time)
+void SnowballParticleRenderable::do_animate(float time)
 {}

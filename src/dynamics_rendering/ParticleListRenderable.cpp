@@ -1,5 +1,5 @@
 #include "../../include/dynamics_rendering/ParticleListRenderable.hpp"
-#include "../../teachers/Geometries.hpp"
+#include "../../include/formes/Geometries.hpp"
 #include <glm/gtc/type_ptr.hpp>
 
 ParticleListRenderable::ParticleListRenderable(ShaderProgramPtr program, std::vector<ParticlePtr>& particles)
@@ -12,7 +12,7 @@ ParticleListRenderable::ParticleListRenderable(ShaderProgramPtr program, std::ve
     std::vector< glm::vec3 > positions;
     std::vector< glm::vec3 > normals;
     std::vector< glm::vec4 > colors;
-    teachers::getUnitSphere(positions, normals, 10, 10);
+    formes::getUnitSphere(positions, normals, 10, 10);
 
     m_numberOfVertices = positions.size();
     colors.resize(m_numberOfVertices);
