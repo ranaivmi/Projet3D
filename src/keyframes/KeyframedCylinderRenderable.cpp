@@ -3,7 +3,7 @@
 
 #include "../../include/gl_helper.hpp"
 #include "../../include/Utils.hpp"
-#include "../../teachers/Geometries.hpp"
+#include "../../include/formes/Geometries.hpp"
 
 #include <glm/gtc/type_ptr.hpp>
 #include <GL/glew.h>

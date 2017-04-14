@@ -1,5 +1,5 @@
-#ifndef PARTICLE_RENDERABLE_HPP
-#define PARTICLE_RENDERABLE_HPP
+#ifndef SNOWPARTICLE_RENDERABLE_HPP
+#define SNOWPARTICLE_RENDERABLE_HPP
 
 #include "../HierarchicalRenderable.hpp"
 #include "../dynamics/Particle.hpp"
@@ -7,21 +7,9 @@
 #include <vector>
 #include <glm/glm.hpp>
 
-/**@brief Render a particle to the screen.
- *
- * Render a particle to the screen. Since a particle is modeled by
- * a ball, this renderable simply render the corresponding ball. If
- * you have more than one renderable, have a look to ParticleListRenderable.
- */
 class SnowballParticleRenderable : public HierarchicalRenderable
 {
     public:
-        /**@brief Build a particle renderable.
-         *
-         * Build a renderable to render a particle.
-         * @param program The shader program used to render the particle.
-         * @param particle The particle to render.
-         */
         SnowballParticleRenderable(ShaderProgramPtr program, ParticlePtr particle);
 
         ~SnowballParticleRenderable();
@@ -44,4 +32,4 @@ class SnowballParticleRenderable : public HierarchicalRenderable
 
 typedef std::shared_ptr<SnowballParticleRenderable> SnowballParticleRenderablePtr;
 
-#endif //PARTICLE_RENDERABLE_HPP
+#endif

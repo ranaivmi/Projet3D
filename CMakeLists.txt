@@ -4,7 +4,7 @@ else()
 	" cmake in another directory than build/. We encourage you to"
 	" be more careful in the future and NEVER DO THAT AGAIN. Now "
 	"the build system will stop, and you will remove "
-	"../CMakeCache.txt and ../CMakefiles/.\n--Your 3D Computer Graphics teachers.")
+	"../CMakeCache.txt and ../CMakefiles/.\n")
 endif()
 
 #==========================================
@@ -88,13 +88,13 @@ find_package(OpenGL REQUIRED)
 file(
     GLOB_RECURSE
     HEADER_FILES
-    include/*.hpp teachers/*.hpp 
+    include/*.hpp 
     )
 
 file(
     GLOB_RECURSE
     SOURCE_FILES
-    src/*.cpp teachers/*.cpp formes/*.cpp
+    src/*.cpp 
     )
 
 file(

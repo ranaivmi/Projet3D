@@ -1,7 +1,7 @@
 #include "../../include/texturing/TexturedPlaneRenderable.hpp"
 #include "../../include/gl_helper.hpp"
 #include "../../include/log.hpp"
-#include "../../teachers/Geometries.hpp"
+#include "../../include/formes/Geometries.hpp"
 
 #include <glm/gtc/type_ptr.hpp>
 #include <GL/glew.h>
@@ -15,7 +15,7 @@ TexturedPlaneRenderable::TexturedPlaneRenderable(
       m_wrapOption(1), m_filterOption(0)
 {
     // Initialize geometry
-    teachers::getUnitPlane(m_positions, m_normals, m_origTexCoords);
+    formes::getUnitPlane(m_positions, m_normals, m_origTexCoords);
     m_texCoords = m_origTexCoords;
 
     // === PART 1: Vertex attributes, except texture coordinates
@@ -50,8 +50,8 @@ TexturedPlaneRenderable::TexturedPlaneRenderable(
     // texture options
     glcheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
     glcheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-    glcheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
-    glcheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+    glcheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));
+    glcheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT));
 
     // Transfer the texture image texture to the GPU
     glcheck(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F,
@@ -156,17 +156,17 @@ void TexturedPlaneRenderable::updateTextureOption()
     //Textured options
     switch(m_wrapOption)
     {
-    case 0:
+    case 1:
         for(size_t i=0; i<m_texCoords.size(); ++i)
         {
             m_texCoords[i] = m_origTexCoords[i];
         }
-        glcheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+        glcheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));
         glcheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
         text.append("Wrapping: CLAMP_TO_EDGE");
         break;
 
-    case 1:
+    case 0:
         for(size_t i=0; i<m_texCoords.size(); ++i)
         {
             m_texCoords[i] = factor*m_origTexCoords[i];
