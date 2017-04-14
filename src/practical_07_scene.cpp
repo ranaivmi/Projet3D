@@ -268,6 +268,7 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
             pr = frand_a_b(0, SNOWBALL_RADIUS);
             pm = frand_a_b(0, 0.00005);
             ParticlePtr snowball = std::make_shared<Particle>(px, pv, pm, pr);
+            snowball->setForce(glm::vec3(0.0, 0.0, 10.0));
             system->addParticle(snowball);
             snowBallRenderable = std::make_shared<SnowballParticleRenderable>(flatShader, snowball);
             HierarchicalRenderable::addChild(systemRenderable, snowBallRenderable);

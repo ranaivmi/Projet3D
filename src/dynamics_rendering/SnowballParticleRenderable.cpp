@@ -126,6 +126,8 @@ void SnowballParticleRenderable::do_draw()
     }
     glm::mat4 translate = glm::translate(glm::mat4(1.0), glm::vec3(x, y, z));
     m_particle->setPosition(glm::vec3(x, y, z));
+    glm::vec3 currentVelocity = m_particle->getVelocity();
+    m_particle->setVelocity(glm::vec3(currentVelocity[0], currentVelocity[1], -10.0));
     setLocalTransform(translate*scale);
 
     //Draw geometric data
