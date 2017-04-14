@@ -20,7 +20,7 @@
 #include "../include/keyframes/KeyframedCylinderRenderable.hpp"
 #include "../include/keyframes/GeometricTransformation.hpp"
 #include "../include/lighting/DirectionalLightRenderable.hpp"
-#include "../include/dynamics_rendering/ControlledForceCanonRenderable.hpp"
+//#include "../include/dynamics_rendering/ControlledForceCanonRenderable.hpp"
 #include "../teachers/Geometries.hpp"
 #include <array>
 
@@ -551,23 +551,26 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
             = std::make_shared<ConstantForceField>(particules, glm::vec3{0, 0, 10} );
           system->addForceField(gravityForceField);
           float R = 1.0;
-          float r = 10;
-          float p = 4 * M_PI * r;
-          float theta = 2 * asin(r / R);
-          float L = theta * R;
-          float j = 2 * M_PI * R / L;
-          float i = 0;
-          int cur_theta = 0;
-          while (cur_theta < 2 * M_PI) {
-              px = glm::vec3(cos(cur_theta), sin(cur_theta), 0.0);
-              pv = glm::vec3(0.0, 0.0, 0.0);
-              pr = r;
-              pm = 0.05;
-              ParticlePtr snowball = std::make_shared<Particle>(px, pv, pm, pr);
-              system->addParticle(snowball);
-              snowBallRenderable = std::make_shared<ParticleRenderable>(flatShader, snowball);
-              HierarchicalRenderable::addChild(systemRenderable, snowBallRenderable);
-              cur_theta += theta;
+          float r = 0.5;
+          // Constantes
+          pv = glm::vec3(0.0, 0.0, 0.0);
+          pr = r;
+          pm = 0.05;
+          int nb_cercles = (R-r) / (2 * r);
+          //int nb_cercles = 2 * M_PI * R / L; // ou 2 * M_PI / theta ?
+          int i = 1;
+          while (i <= nb_cercles) {
+              int cur_theta = 0;
+              float theta = 2 * asin(r / 2 * i);
+              while (cur_theta < 2 * M_PI) {
+                  px = glm::vec3(2 * i * cos(cur_theta), 2 * i * sin(cur_theta), 0.0);
+                  ParticlePtr particule = std::make_shared<Particle>(px, pv, pm, pr);
+                  system->addParticle(particule);
+                  ParticleRenderable particuleRenderable = std::make_shared<ParticleRenderable>(flatShader, particule);
+                  HierarchicalRenderable::addChild(systemRenderable, particuleRenderable);
+                  cur_theta += theta;
+              }
+              i++
           }
           /*
           px = glm::vec3(1.0, 0, 1.0);
