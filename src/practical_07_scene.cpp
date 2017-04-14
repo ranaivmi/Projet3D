@@ -11,7 +11,7 @@
 #include "../include/dynamics/EulerExplicitSolver.hpp"
 
 #include "../include/dynamics_rendering/DynamicSystemRenderable.hpp"
-#include "../include/dynamics_rendering/ParticleRenderable.hpp"
+#include "../include/dynamics_rendering/SnowballParticleRenderable.hpp"
 #include "../include/dynamics_rendering/ParticleListRenderable.hpp"
 #include "../include/dynamics_rendering/ConstantForceFieldRenderable.hpp"
 #include "../include/dynamics_rendering/SpringForceFieldRenderable.hpp"
@@ -235,7 +235,7 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
     {
 
         //Initialize a particle with position, velocity, mass and radius and add it to the system
-        px = glm::vec3(0.0, 0.0, 1.0);
+        px = glm::vec3(0.0, -PL, 1.0);
         pv = glm::vec3(0.0, 0.0, 0.0);
         pr = 0.1;
         pm = 1.0;
@@ -245,24 +245,31 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
         //Create a particleRenderable for each particle of the system
         //DynamicSystemRenderable act as a hierarchical renderable
         //This which allows to easily apply transformation on the visualiazation of a dynamicSystem
-        ParticleRenderablePtr particleRenderable = std::make_shared<ParticleRenderable>(flatShader, particle);
+        SnowballParticleRenderablePtr particleRenderable = std::make_shared<SnowballParticleRenderable>(flatShader, particle);
         HierarchicalRenderable::addChild(systemRenderable, particleRenderable);
     }
 
     //Particle vs Particle collision
     {
         // Initialization snow
-        int nb_snowball = 2000;
-        ParticleRenderablePtr snowBallRenderable;
 
+        TexturedMeshRenderablePtr meshBall = std::make_shared<TexturedMeshRenderable>(texShader, "../meshes/sphere.obj", "../textures/grass_texture.png");
+        scaleTransformation = glm::translate(glm::mat4(1.0), glm::vec3(0.0, -PL, 13.0)) * glm::scale(glm::mat4(1.0), glm::vec3(100.0, SNOWBALL_RADIUS, SNOWBALL_RADIUS));
+        meshBall->setMaterial(pearl);
+        meshBall->setLocalTransform(scaleTransformation);
+        meshBall->setParentTransform(glm::mat4(1.0));
+        HierarchicalRenderable::addChild(systemRenderable, meshBall);
+
+        int nb_snowball = 2000;
+        SnowballParticleRenderablePtr snowBallRenderable;
         for (int i = 1; i < nb_snowball; i++) {
             px = glm::vec3(frand_a_b(-PS, PS), frand_a_b(-PS, PS), frand_a_b(0.0, 50.0));
             pv = glm::vec3(frand_a_b(-WIND, WIND), frand_a_b(-WIND, WIND), -10.0);
             pr = frand_a_b(0, SNOWBALL_RADIUS);
-            pm = frand_a_b(0, 0.005);
+            pm = frand_a_b(0, 0.00005);
             ParticlePtr snowball = std::make_shared<Particle>(px, pv, pm, pr);
             system->addParticle(snowball);
-            snowBallRenderable = std::make_shared<ParticleRenderable>(flatShader, snowball);
+            snowBallRenderable = std::make_shared<SnowballParticleRenderable>(flatShader, snowball);
             HierarchicalRenderable::addChild(systemRenderable, snowBallRenderable);
         }
         // End Snow
