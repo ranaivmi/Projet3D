@@ -1,12 +1,14 @@
 #include "../include/Viewer.hpp"
 #include "../include/FrameRenderable.hpp"
+#include "../include/CylinderRenderable.hpp"
+#include "../include/ConeRenderable.hpp"
+#include "../teachers/MeshRenderable.hpp"
 
 #include "../include/dynamics/DynamicSystem.hpp"
 #include "../include/dynamics/DampingForceField.hpp"
 #include "../include/dynamics/ConstantForceField.hpp"
 #include "../include/dynamics/SpringForceField.hpp"
 #include "../include/dynamics/EulerExplicitSolver.hpp"
-#include "../include/CylinderRenderable.hpp"
 
 #include "../include/dynamics_rendering/DynamicSystemRenderable.hpp"
 #include "../include/dynamics_rendering/ParticleRenderable.hpp"
@@ -17,27 +19,70 @@
 #include "../include/dynamics_rendering/ControlledForceFieldRenderable.hpp"
 #include "../include/dynamics_rendering/QuadRenderable.hpp"
 
-#include "../include/texturing/TexturedCylinderRenderable.hpp"
 #include "../include/keyframes/KeyframedCylinderRenderable.hpp"
 #include "../include/keyframes/GeometricTransformation.hpp"
+
+#include "../include/texturing/TexturedCylinderRenderable.hpp"
+#include "../include/texturing/TexturedPlaneRenderable.hpp"
+#include "../include/texturing/TexturedMeshRenderable.hpp"
+
 #include "../include/lighting/DirectionalLightRenderable.hpp"
+#include "../include/keyframes/GeometricTransformation.hpp"
 
 #include <cstdlib>
 
-void practical07_particles(Viewer& viewer,
-    DynamicSystemPtr& system, DynamicSystemRenderablePtr& systemRenderable);
-
-void practical07_springs(Viewer& viewer,
-    DynamicSystemPtr& system, DynamicSystemRenderablePtr& systemRenderable);
-
-void practical07_collisions(Viewer& viewer,
-    DynamicSystemPtr& system, DynamicSystemRenderablePtr& systemRenderable);
-
-void practical07_playPool(Viewer& viewer,
-    DynamicSystemPtr& system, DynamicSystemRenderablePtr& systemRenderable);
+#define PS 50.0
+#define PL 25.0
+#define LPL PL/5
+#define SNOWBALL_RADIUS 0.25
+#define PH 3.0
+#define COS_45 0.70710678118
+#define FIR_SIZE 4.0
+#define WIND 10.0
 
 void snow_scene(Viewer& viewer,
     DynamicSystemPtr& system, DynamicSystemRenderablePtr& systemRenderable);
+
+void createFir(DynamicSystemRenderablePtr &systemRenderable, glm::mat4 FinaltranslateM , ShaderProgramPtr flatShader ){
+
+    glm::mat4 scaleM(1.0);
+    glm::mat4 translateM(1.0);
+
+    // Tron du sapin
+    std::shared_ptr<formes::CylinderRenderable> Tron
+        = std::make_shared<formes::CylinderRenderable>(flatShader, 30);
+    scaleM = glm::scale(glm::mat4(), glm::vec3(0.5, 0.5, 0.5));
+      Tron->setLocalTransform(scaleM*Tron->getModelMatrix());
+      Tron->setModelMatrix(FinaltranslateM);
+
+    //Haut du sapin
+    std::shared_ptr<formes::ConeRenderable> Cone1
+        = std::make_shared<formes::ConeRenderable>(flatShader, 30);
+    translateM = glm::translate(glm::mat4(), glm::vec3(0.0, 0.0, 0.5));
+    Cone1->setParentTransform(translateM);
+    scaleM = glm::scale(glm::mat4(), glm::vec3(1.0,1.0,1.0));
+    Cone1->setLocalTransform(scaleM);
+
+    std::shared_ptr<formes::ConeRenderable> Cone2
+        = std::make_shared<formes::ConeRenderable>(flatShader, 30);
+    translateM = glm::translate(glm::mat4(), glm::vec3(0.0, 0.0, 1.0));
+    Cone2->setParentTransform(translateM);
+    scaleM = glm::scale(glm::mat4(), glm::vec3(0.85,0.85,1.0));
+    Cone2->setLocalTransform(scaleM);
+
+    std::shared_ptr<formes::ConeRenderable> Cone3
+        = std::make_shared<formes::ConeRenderable>(flatShader, 30);
+    translateM = glm::translate(glm::mat4(), glm::vec3(0.0, 0.0, 1.5));
+    Cone3->setParentTransform(translateM);
+    scaleM = glm::scale(glm::mat4(), glm::vec3(0.70,0.70,0.8));
+    Cone3->setLocalTransform(scaleM);
+
+    HierarchicalRenderable::addChild(Tron, Cone1);
+    HierarchicalRenderable::addChild(Tron, Cone2);
+    HierarchicalRenderable::addChild(Tron, Cone3);
+    //viewer.addRenderable(Tron);
+    HierarchicalRenderable::addChild( systemRenderable, Tron );
+}
 
 void initialize_practical_07_scene(Viewer& viewer, unsigned int scene_to_load)
 {
@@ -63,22 +108,11 @@ void initialize_practical_07_scene(Viewer& viewer, unsigned int scene_to_load)
     //Populate the dynamic system with particles, forcefields
     //and create renderables associated to them for visualization.
     switch (scene_to_load) {
-        case 71:
-            practical07_particles(viewer, system, systemRenderable);
-            break;
-        case 72:
-            practical07_springs(viewer, system, systemRenderable);
-            break;
-        case 73:
-            practical07_collisions(viewer, system, systemRenderable);
-            break;
-        case 74:
-            practical07_playPool(viewer, system, systemRenderable);
-            break;
         case 75:
             snow_scene(viewer, system, systemRenderable);
             break;
         default:
+            snow_scene(viewer, system, systemRenderable);
             break;
     }
 
@@ -86,188 +120,120 @@ void initialize_practical_07_scene(Viewer& viewer, unsigned int scene_to_load)
     viewer.startAnimation();
 }
 
-
-void practical07_particles(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderablePtr &systemRenderable)
-{
-    //Position the camera
-    viewer.getCamera().setViewMatrix(
-        glm::lookAt(glm::vec3(0, -4, 0), glm::vec3(0,0,0), glm::vec3(0,0,1)) );
-
-    //Initialize a shader for the following renderables
-    ShaderProgramPtr flatShader
-        = std::make_shared<ShaderProgram>("../shaders/flatVertex.glsl","../shaders/flatFragment.glsl");
-    viewer.addShaderProgram(flatShader);
-
-    //We diminish the time step to be able to see what happens before particles go too far
-    system->setDt(5e-4);
-
-    //Deactivate collision detection
-    system->setCollisionsDetection(false);
-
-    glm::vec3 px,pv;
-    float pm, pr;
-    //Two particles with gravity and damping
-    {
-        //Initialize each particle with its position, velocity, mass and radius
-        //and add it to the system
-        px = glm::vec3(0.0, 0.0, 1.0);
-        pv = glm::vec3(3.0, 0.0, 0.0);
-        pr = 0.1;
-        pm = 1.0;
-        ParticlePtr particle1 = std::make_shared<Particle>(px, pv, pm, pr);
-        system->addParticle(particle1);
-
-        px = glm::vec3(0.0, 0.0, 1.5);
-        pv = glm::vec3(6.0, 0.0, 0.0);
-        pr = 0.1;
-        pm = 1.0;
-        ParticlePtr particle2 = std::make_shared<Particle>(px, pv, pm, pr);
-        system->addParticle(particle2);
-
-        //Initialize a force field that apply to all the particles of the system to simulate gravity
-        //Add it to the system as a force field
-        ConstantForceFieldPtr gravityForceField
-            = std::make_shared<ConstantForceField>(system->getParticles(), glm::vec3{0, 0, -10} );
-        system->addForceField(gravityForceField);
-
-        //Create a particleRenderable for each particle of the system
-        //DynamicSystemRenderable act as a hierarchical renderable
-        //This allows easily applying a transformation on the visualization of a dynamicSystem
-        ParticleRenderablePtr particleRenderable1
-            = std::make_shared<ParticleRenderable>(flatShader, particle1);
-        HierarchicalRenderable::addChild(systemRenderable, particleRenderable1);
-        ParticleRenderablePtr particleRenderable2
-            = std::make_shared<ParticleRenderable>(flatShader, particle2);
-        HierarchicalRenderable::addChild(systemRenderable, particleRenderable2);
-    }
+double frand_a_b(double a, double b) {
+    return ( rand()/(double)RAND_MAX ) * (b-a) + a;
 }
 
-
-void practical07_springs(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderablePtr &systemRenderable)
+void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderablePtr &systemRenderable)
 {
-    //Position the camera
-    viewer.getCamera().setViewMatrix(
-        glm::lookAt(glm::vec3(-10, 0, 2), glm::vec3(0,0,0), glm::vec3(0,0,1)) );
-
     //Initialize a shader for the following renderables
     ShaderProgramPtr flatShader
         = std::make_shared<ShaderProgram>("../shaders/flatVertex.glsl","../shaders/flatFragment.glsl");
+    ShaderProgramPtr texShader
+        = std::make_shared<ShaderProgram>("../shaders/textureVertex.glsl", "../shaders/textureFragment.glsl");
+    ShaderProgramPtr phongShader
+            = std::make_shared<ShaderProgram>("../shaders/phongVertex.glsl", "../shaders/phongFragment.glsl");
     viewer.addShaderProgram(flatShader);
+    viewer.addShaderProgram(texShader);
+    viewer.addShaderProgram(phongShader);
 
-    //Initialize particle attributes (radius, mass)
-    float pr = 0.1, pm = 10.0;
-    glm::vec3 px(0.0,0.0,0.0), pv(0.0,0.0,0.0);
-
-    //Create particles on a squared uniform grid starting at origin
-    std::vector<ParticlePtr> particles;
-    glm::vec3 origin(0,-2.0,1.0), displacement(0.0,0.0,0.0);
-    int particlePerLine = 11;
-    float gridWidth=4.0, gridHeight=4.0;
-    float ystep = gridWidth / (float)(particlePerLine-1);
-    float zstep = gridHeight / (float)(particlePerLine-1);
-    particles.resize(particlePerLine*particlePerLine);
-    for (size_t i = 0; i < particlePerLine; ++ i) {
-        for (size_t j = 0; j < particlePerLine; ++ j) {
-            displacement = glm::vec3(0, i*ystep, j*zstep);
-            px = origin + displacement;
-            particles[i*particlePerLine+j] = std::make_shared<Particle>( px, pv, pm, pr );
-            system->addParticle( particles[i*particlePerLine+j] );
-        }
-    }
-
-    //Fix particles on the y-borders
-    for (size_t j = 0; j < particlePerLine; ++j) {
-        particles[0 * particlePerLine + j]->setFixed(true);
-        particles[(particlePerLine - 1) * particlePerLine + j]->setFixed(true);
-    }
-
-    //Initialize springs attributes (stiffness, rest length, damping)
-    float stiffness = 4e3;
-    float l0 = gridWidth / (particlePerLine-1);
-    float damping = 0.0;
-
-    //Create springs between particles of the grid, horizontally and vertically
-    //Store them in a list
-    std::list<SpringForceFieldPtr> springForceFields;
-    //Interior
-    for (size_t i = 1; i < particlePerLine; ++ i) {
-        for (size_t j = 1; j < particlePerLine; ++ j) {
-            SpringForceFieldPtr spring1 = std::make_shared<SpringForceField>( particles[(i-1)*particlePerLine+j], particles[i*particlePerLine+j], stiffness, l0, damping );
-            springForceFields.push_back(spring1);
-            system->addForceField(spring1);
-            SpringForceFieldPtr spring2 = std::make_shared<SpringForceField>( particles[i*particlePerLine+(j-1)], particles[i*particlePerLine+j], stiffness, l0, damping );
-            springForceFields.push_back(spring2);
-            system->addForceField(spring2);
-        }
-    }
-    //Border case 1
-    for (size_t j = 1; j < particlePerLine; ++ j) {
-        SpringForceFieldPtr spring = std::make_shared<SpringForceField>( particles[0*particlePerLine+j], particles[0*particlePerLine+(j-1)], stiffness, l0, damping );
-        springForceFields.push_back(spring);
-        system->addForceField(spring);
-    }
-    //Border case 2
-    for (size_t i = 1; i < particlePerLine; ++ i) {
-        SpringForceFieldPtr spring = std::make_shared<SpringForceField>( particles[(i-1)*particlePerLine+0], particles[i*particlePerLine+0], stiffness, l0, damping );
-        springForceFields.push_back(spring);
-        system->addForceField(spring);
-    }
-
-    //Initialize a force field that apply to all the particles of the system to simulate gravity
-    //Add it to the system as a force field
-    ConstantForceFieldPtr gravityForceField = std::make_shared<ConstantForceField>(system->getParticles(), glm::vec3{0, 0, -10});
-    system->addForceField(gravityForceField);
-
-    //Initialize a force field that apply to all the particles of the system to simulate vicosity (air friction)
-    float dampingCoefficient = 0.0;
-    DampingForceFieldPtr dampingForceField = std::make_shared<DampingForceField>(system->getParticles(), dampingCoefficient);
-    system->addForceField(dampingForceField);
-
-
-    //Create a particleListRenderable to efficiently visualize the particles of the system
-    ParticleListRenderablePtr particleListRenderable = std::make_shared<ParticleListRenderable>( flatShader, particles);
-    HierarchicalRenderable::addChild(systemRenderable, particleListRenderable);
-
-    //Create a springListRenderable to efficiently visualize the springs of the system
-    SpringListRenderablePtr springsRenderable = std::make_shared<SpringListRenderable>(flatShader, springForceFields);
-    HierarchicalRenderable::addChild(systemRenderable, springsRenderable);
-
-    //Display gravity
-    ConstantForceFieldRenderablePtr gravityRenderable = std::make_shared<ConstantForceFieldRenderable>(flatShader, gravityForceField);
-    HierarchicalRenderable::addChild(systemRenderable, gravityRenderable);
-}
-
-
-void practical07_collisions(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderablePtr &systemRenderable)
-{
-    //Position the camera
-    viewer.getCamera().setViewMatrix(
-        glm::lookAt(glm::vec3(0, 2, 2), glm::vec3(0,0,0), glm::vec3(0,0,1)) );
-
-    //Initialize a shader for the following renderables
-    ShaderProgramPtr flatShader
-        = std::make_shared<ShaderProgram>("../shaders/flatVertex.glsl","../shaders/flatFragment.glsl");
-    viewer.addShaderProgram(flatShader);
+    system->setDt(0.0250);
 
     //Activate collision detection
-    system->setCollisionsDetection(true);
+    system->setCollisionsDetection(false);
 
     //Initialize the restitution coefficient for collision
     //1.0 = full elastic response
     //0.0 = full absorption
     system->setRestitution(0.6f);
 
-    //Initialize a plane from 3 points and add it to the system as an obstacle
-    glm::vec3 p1(-1.0, -1.0, 0.0);
-    glm::vec3 p2(1.0, -1.0, 0.0);
-    glm::vec3 p3(1.0, 1.0, 0.0);
-    glm::vec3 p4(-1.0, 1.0, 0.0);
-    PlanePtr plane = std::make_shared<Plane>(p1, p2, p3);
-    system->addPlaneObstacle(plane);
+    glm::mat4 scaleTransformation(1.0), localTransformation(1.0);
+    std::string filename;
+    MaterialPtr pearl = Material::Pearl();
+    MaterialPtr emerald = Material::Emerald();
 
-    //Create a plane renderable to display the obstacle
-    PlaneRenderablePtr planeRenderable = std::make_shared<QuadRenderable>(flatShader, p1,p2,p3,p4);
-    HierarchicalRenderable::addChild( systemRenderable, planeRenderable );
+    glm::vec3 d_direction = glm::normalize(glm::vec3(0.0,0.0,-1.0));
+    glm::vec3 d_ambient(1.0,1.0,1.0), d_diffuse(1.0,1.0,0.8), d_specular(1.0,1.0,1.0);
+    DirectionalLightPtr directionalLight = std::make_shared<DirectionalLight>(d_direction, d_ambient, d_diffuse, d_specular);
+    //Add a renderable to display the light and control it via mouse/key event
+    glm::vec3 lightPosition(0.0,0.0,50.0);
+    DirectionalLightRenderablePtr directionalLightRenderable = std::make_shared<DirectionalLightRenderable>(phongShader, directionalLight, lightPosition);
+    localTransformation = glm::scale(glm::mat4(1.0), glm::vec3(0.5,0.5,0.5));
+    directionalLightRenderable->setLocalTransform(localTransformation);
+    viewer.setDirectionalLight(directionalLight);
+    viewer.addRenderable(directionalLightRenderable);
+
+    //Initialize a plane from 3 points and add it to the system as an obstacle
+    // main plane, flat => -PS, -PS, 0 - PS, -PS, 0 - -PS, 0, 0 - PS, 0, 0
+    // Flat plane
+    glm::vec3 p1(-PS, -PS, 0.0);
+    glm::vec3 p2(PS, -PS, 0.0);
+    // Flat & Leaning plane
+    glm::vec3 p3(-PS, 0.0, 0.0);
+    glm::vec3 p4(PS, 0.0, 0.0);
+    // Leaning & High plane
+    glm::vec3 p5(-PS, PS/2, PH);
+    glm::vec3 p6(PS, PS/2, PH);
+    // High plane
+    glm::vec3 p7(-PS, PS, PH);
+    glm::vec3 p8(PS, PS, PH);
+
+    // normal vectors to define planes
+    glm::vec3 normalFlat(0.0, 0.0, 1.0);
+    glm::vec3 normalLeaning(0.0, -2.0, 3.0);
+
+    glm::vec4 color(0.5, 0.5, 0.5, 1.0);
+    PlanePtr flat_plane = std::make_shared<Plane>(p1, normalFlat);
+    system->addPlaneObstacle(flat_plane);
+
+    PlanePtr leaning_plane = std::make_shared<Plane>(p3, normalLeaning);
+    system->addPlaneObstacle(leaning_plane);
+
+    PlanePtr high_plane = std::make_shared<Plane>(p5, normalFlat);
+    system->addPlaneObstacle(high_plane);
+
+    filename = "../textures/snow_tex2.png";
+    TexturedPlaneRenderablePtr flatPlaneRenderable = std::make_shared<TexturedPlaneRenderable>(texShader, filename);
+    scaleTransformation = glm::translate(glm::mat4(1.0), glm::vec3(0.0, -PL/2, 0.0)) * glm::scale(glm::mat4(1.0), glm::vec3(PS, PL, 10.0));
+    flatPlaneRenderable->setParentTransform(scaleTransformation);
+    flatPlaneRenderable->setMaterial(pearl);
+    HierarchicalRenderable::addChild( systemRenderable, flatPlaneRenderable );
+
+    TexturedPlaneRenderablePtr leaningPlaneRenderable = std::make_shared<TexturedPlaneRenderable>(texShader, filename);
+    scaleTransformation = glm::rotate(glm::mat4(1.0), (float) (M_PI/4.0), glm::vec3(1.0, 0.0, 0.0)) * glm::translate(glm::mat4(1.0), glm::vec3(0.0, LPL/2, 0.0)) * glm::scale(glm::mat4(1.0), glm::vec3(PS, LPL, 10.0));
+    leaningPlaneRenderable->setParentTransform(scaleTransformation);
+    leaningPlaneRenderable->setMaterial(pearl);
+    HierarchicalRenderable::addChild( systemRenderable, leaningPlaneRenderable );
+
+    TexturedPlaneRenderablePtr highPlaneRenderable = std::make_shared<TexturedPlaneRenderable>(texShader, filename);
+    scaleTransformation = glm::translate(glm::mat4(1.0), glm::vec3(0.0, PL/2+LPL*COS_45, LPL*COS_45)) * glm::scale(glm::mat4(1.0), glm::vec3(PS, PL, 10.0));
+    highPlaneRenderable->setParentTransform(scaleTransformation);
+    highPlaneRenderable->setMaterial(pearl);
+    HierarchicalRenderable::addChild( systemRenderable, highPlaneRenderable );
+
+    //Position the camera
+    viewer.getCamera().setViewMatrix(
+        glm::lookAt(glm::vec3(0, -PL, 10), glm::vec3(0, PL/2 + LPL*COS_45, LPL*COS_45), glm::vec3(0,0,1)) );
+
+    glm::mat4 translateM(1.0);
+
+    // Firs on flatPlane
+    for (int i = 5; i > 0; i--) {
+        for (int j = 0; j < i; j++) {
+            translateM = glm::translate(glm::mat4(), glm::vec3(+ i*FIR_SIZE, -PL + (j+1)*FIR_SIZE, 0));
+            createFir(systemRenderable, translateM, flatShader);
+            translateM = glm::translate(glm::mat4(), glm::vec3(- i*FIR_SIZE, -PL + (j+1)*FIR_SIZE, 0));
+            createFir(systemRenderable, translateM, flatShader);
+        }
+    }
+
+    // Firs on highPlane
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 11; j++) {
+            translateM = glm::translate(glm::mat4(), glm::vec3(-PS/2 +  (j+1)*FIR_SIZE, PL + LPL*COS_45 - (i+1)*FIR_SIZE, LPL*COS_45));
+            createFir(systemRenderable, translateM, flatShader);
+        }
+    }
 
     glm::vec3 px,pv;
     float pm, pr;
@@ -291,242 +257,14 @@ void practical07_collisions(Viewer& viewer, DynamicSystemPtr& system, DynamicSys
 
     //Particle vs Particle collision
     {
-        //Initialize two particles with position, velocity, mass and radius and add it to the system
-        //One of the particle is fixed
-        px = glm::vec3(0.5, 0.0, 0.1);
-        pv = glm::vec3(0.0, 0.0, 0.0);
-        pr = 0.1;
-        pm = 1000.0;
-        ParticlePtr particle1 = std::make_shared<Particle>(px, pv, pm, pr);
-        particle1->setFixed(true);
-        system->addParticle(particle1);
-
-        px = glm::vec3(0.5, 0.0, 1.0);
-        pv = glm::vec3(0.0, 0.0, -0.5);
-        pr = 0.1;
-        pm = 1.0;
-        ParticlePtr particle2 = std::make_shared<Particle>(px, pv, pm, pr);
-        system->addParticle(particle2);
-
-        //Create a particleRenderable for each particle of the system
-        ParticleRenderablePtr particleRenderable1 = std::make_shared<ParticleRenderable>(flatShader, particle1);
-        HierarchicalRenderable::addChild(systemRenderable, particleRenderable1);
-        ParticleRenderablePtr particleRenderable2 = std::make_shared<ParticleRenderable>(flatShader, particle2);
-        HierarchicalRenderable::addChild(systemRenderable, particleRenderable2);
-    }
-
-    //Initialize a force field that apply to all the particles of the system to simulate gravity
-    //Add it to the system as a force field
-    ConstantForceFieldPtr gravityForceField = std::make_shared<ConstantForceField>(system->getParticles(), glm::vec3{0,0,-10} );
-    system->addForceField(gravityForceField);
-}
-
-
-void practical07_playPool(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderablePtr& systemRenderable)
-{
-    //Initialize a shader for the following renderables
-    ShaderProgramPtr flatShader
-        = std::make_shared<ShaderProgram>("../shaders/flatVertex.glsl","../shaders/flatFragment.glsl");
-    viewer.addShaderProgram(flatShader);
-
-    //Position the camera
-    viewer.getCamera().setViewMatrix(
-        glm::lookAt(glm::vec3(0, -15, 15), glm::vec3(0,0,0), glm::vec3(0,0,1)) );
-
-    //Initialize two particles with position, velocity, mass and radius and add it to the system
-    glm::vec3 px(0.0, 0.0, 0.0);
-    glm::vec3 pv(0.0, 0.0, 0.0);
-    float pm = 1.0, pr = 1.0;
-    px = glm::vec3(0.0,0.0,1.0);
-    ParticlePtr mobile = std::make_shared<Particle>( px, pv, pm, pr);
-    system->addParticle( mobile );
-    px = glm::vec3(0.0,5.0,1.0);
-    ParticlePtr other = std::make_shared<Particle>( px, pv, pm, pr);
-    system->addParticle( other );
-
-    //Create a particleRenderable for each particle of the system
-    //Add them to the system renderable
-    ParticleRenderablePtr mobileRenderable = std::make_shared<ParticleRenderable>(flatShader, mobile);
-    HierarchicalRenderable::addChild(systemRenderable, mobileRenderable);
-    ParticleRenderablePtr otherRenderable = std::make_shared<ParticleRenderable>(flatShader, other);
-    HierarchicalRenderable::addChild(systemRenderable, otherRenderable);
-
-    //Initialize four planes to create walls arround the particles
-    glm::vec3 planeNormal, planePoint;
-    planeNormal = glm::vec3(-1, 0, 0);
-    planePoint = glm::vec3(10, 0, 0);
-    PlanePtr p0 = std::make_shared<Plane>(planeNormal, planePoint);
-    system->addPlaneObstacle(p0);
-
-    planeNormal = glm::vec3(1, 0, 0);
-    planePoint = glm::vec3(-10, 0, 0);
-    PlanePtr p1 = std::make_shared<Plane>(planeNormal, planePoint);
-    system->addPlaneObstacle(p1);
-
-    planeNormal = glm::vec3(0, -1, 0);
-    planePoint = glm::vec3(0, 10, 0);
-    PlanePtr p2 = std::make_shared<Plane>(planeNormal, planePoint);
-    system->addPlaneObstacle(p2);
-
-    planeNormal = glm::vec3(0, 1, 0);
-    planePoint = glm::vec3(0, -10, 0);
-    PlanePtr p3 = std::make_shared<Plane>(planeNormal, planePoint);
-    system->addPlaneObstacle(p3);
-
-    planeNormal = glm::vec3(0, 0, 1);
-    planePoint = glm::vec3(0, 0, 0);
-    PlanePtr floor = std::make_shared<Plane>( planeNormal, planePoint);
-    system->addPlaneObstacle(floor);
-
-    //Create  plane renderables to display each obstacle
-    //Add them to the system renderable
-    glm::vec3 x1, x2, x3, x4;
-    glm::vec4 color;
-    x1 = glm::vec3(10,  10, 5);
-    x2 = glm::vec3(10,  10, 0);
-    x3 = glm::vec3(10, -10, 0);
-    x4 = glm::vec3(10, -10, 5);
-    color = glm::vec4(0.4, 0.2, 0.2, 1.0);
-    PlaneRenderablePtr p1Renderable = std::make_shared<QuadRenderable>(flatShader, x1, x2, x3, x4, color);
-    HierarchicalRenderable::addChild(systemRenderable, p1Renderable);
-
-    x1 = glm::vec3(-10, 10, 5);
-    x2 = glm::vec3(-10, 10, 0);
-    x3 = glm::vec3( 10, 10, 0);
-    x4 = glm::vec3( 10, 10, 5);
-    color = glm::vec4(0.4, 0.2, 0.2, 1.0);
-    PlaneRenderablePtr p2Renderable = std::make_shared<QuadRenderable>(flatShader, x1, x2, x3, x4, color);
-    HierarchicalRenderable::addChild(systemRenderable, p2Renderable);
-
-    x1 = glm::vec3(-10, -10, 5);
-    x2 = glm::vec3(-10, -10, 0);
-    x3 = glm::vec3(-10,  10, 0);
-    x4 = glm::vec3(-10,  10, 5);
-    color = glm::vec4(0.2, 0.4, 0.4, 1.0);
-    PlaneRenderablePtr p3Renderable = std::make_shared<QuadRenderable>(flatShader, x1, x2, x3, x4, color);
-    HierarchicalRenderable::addChild(systemRenderable, p3Renderable);
-
-    x1 = glm::vec3( 10, -10, 5);
-    x2 = glm::vec3( 10, -10, 0);
-    x3 = glm::vec3(-10, -10, 0);
-    x4 = glm::vec3(-10, -10, 5);
-    color = glm::vec4(0.2, 0.4, 0.4, 1.0);
-    PlaneRenderablePtr p4Renderable = std::make_shared<QuadRenderable>(flatShader, x1, x2, x3, x4, color);
-    HierarchicalRenderable::addChild(systemRenderable, p4Renderable);
-
-    //Initialize a force field that apply only to the mobile particle
-    glm::vec3 nullForce(0.0, 0.0, 0.0);
-    std::vector<ParticlePtr> vParticle;
-    vParticle.push_back(mobile);
-    ConstantForceFieldPtr force = std::make_shared<ConstantForceField>(vParticle, nullForce);
-    system->addForceField(force);
-
-    //Initialize a renderable for the force field applied on the mobile particle.
-    //This renderable allows to modify the attribute of the force by key/mouse events
-    //Add this renderable to the systemRenderable.
-    ControlledForceFieldRenderablePtr forceRenderable = std::make_shared<ControlledForceFieldRenderable>(flatShader, force);
-    HierarchicalRenderable::addChild(systemRenderable, forceRenderable);
-
-    //Add a damping force field to the mobile.
-    DampingForceFieldPtr dampingForceField = std::make_shared<DampingForceField>(vParticle, 0.9);
-    system->addForceField(dampingForceField);
-
-    //Activate collision and set the restitution coefficient to 1.0
-    system->setCollisionsDetection(true);
-    system->setRestitution(1.0f);
-}
-
-double frand_a_b(double a, double b){
-    return ( rand()/(double)RAND_MAX ) * (b-a) + a;
-}
-
-void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderablePtr &systemRenderable)
-{
-    //Position the camera
-    viewer.getCamera().setViewMatrix(
-        glm::lookAt(glm::vec3(0, 2, 2), glm::vec3(0,0,0), glm::vec3(0,0,1)) );
-
-    //Initialize a shader for the following renderables
-    ShaderProgramPtr flatShader
-        = std::make_shared<ShaderProgram>("../shaders/flatVertex.glsl","../shaders/flatFragment.glsl");
-    viewer.addShaderProgram(flatShader);
-
-    system->setDt(0.005);
-
-    //Activate collision detection
-    system->setCollisionsDetection(true);
-
-    //Initialize the restitution coefficient for collision
-    //1.0 = full elastic response
-    //0.0 = full absorption
-    system->setRestitution(0.6f);
-
-    //Initialize a plane from 3 points and add it to the system as an obstacle
-    glm::vec3 p1(-1.0, -1.0, 0.0);
-    glm::vec3 p2(1.0, -1.0, 0.0);
-    glm::vec3 p3(1.0, 1.0, 0.0);
-    glm::vec3 p4(-1.0, 1.0, 0.0);
-    PlanePtr plane = std::make_shared<Plane>(p1, p2, p3);
-    system->addPlaneObstacle(plane);
-
-    //Create a plane renderable to display the obstacle
-    PlaneRenderablePtr planeRenderable = std::make_shared<QuadRenderable>(flatShader, p1,p2,p3,p4);
-    HierarchicalRenderable::addChild( systemRenderable, planeRenderable );
-
-    glm::vec3 px,pv;
-    float pm, pr;
-    //Particle vs Plane collision
-    {
-
-        //Initialize a particle with position, velocity, mass and radius and add it to the system
-        px = glm::vec3(0.0, 0.0, 1.0);
-        pv = glm::vec3(0.0, 0.0, 0.0);
-        pr = 0.1;
-        pm = 1.0;
-        ParticlePtr particle = std::make_shared<Particle>(px, pv, pm, pr);
-        //system->addParticle(particle);
-
-        //Create a particleRenderable for each particle of the system
-        //DynamicSystemRenderable act as a hierarchical renderable
-        //This which allows to easily apply transformation on the visualiazation of a dynamicSystem
-        ParticleRenderablePtr particleRenderable = std::make_shared<ParticleRenderable>(flatShader, particle);
-        //HierarchicalRenderable::addChild(systemRenderable, particleRenderable);
-    }
-
-    //Particle vs Particle collision
-    {
-        //Initialize two particles with position, velocity, mass and radius and add it to the system
-        //One of the particle is fixed
-        px = glm::vec3(0.5, 0.0, 0.1);
-        pv = glm::vec3(0.0, 0.0, 0.0);
-        pr = 0.1;
-        pm = 1000.0;
-        ParticlePtr particle1 = std::make_shared<Particle>(px, pv, pm, pr);
-        particle1->setFixed(true);
-        //system->addParticle(particle1);
-
-        px = glm::vec3(0.5, 0.0, 1.0);
-        pv = glm::vec3(0.0, 0.0, -0.5);
-        pr = 0.1;
-        pm = 1.0;
-        ParticlePtr particle2 = std::make_shared<Particle>(px, pv, pm, pr);
-        //system->addParticle(particle2);
-
-        //Create a particleRenderable for each particle of the system
-        ParticleRenderablePtr particleRenderable1 = std::make_shared<ParticleRenderable>(flatShader, particle1);
-        //HierarchicalRenderable::addChild(systemRenderable, particleRenderable1);
-        ParticleRenderablePtr particleRenderable2 = std::make_shared<ParticleRenderable>(flatShader, particle2);
-        //HierarchicalRenderable::addChild(systemRenderable, particleRenderable2);
-      }
-
-      {
         // Initialization snow
-        int nb_snowball = 0;
+        int nb_snowball = 2000;
         ParticleRenderablePtr snowBallRenderable;
-        for (int i = 2; i < nb_snowball; i++) {
-            px = glm::vec3(frand_a_b(-1.0, 1.0), frand_a_b(-1.0, 1.0), frand_a_b(0.025, 3.0));
-            pv = glm::vec3(0.0, 0.0, 0.0);
-            pr = frand_a_b(0, 0.025);
+
+        for (int i = 1; i < nb_snowball; i++) {
+            px = glm::vec3(frand_a_b(-PS, PS), frand_a_b(-PS, PS), frand_a_b(0.0, 50.0));
+            pv = glm::vec3(frand_a_b(-WIND, WIND), frand_a_b(-WIND, WIND), -10.0);
+            pr = frand_a_b(0, SNOWBALL_RADIUS);
             pm = frand_a_b(0, 0.005);
             ParticlePtr snowball = std::make_shared<Particle>(px, pv, pm, pr);
             system->addParticle(snowball);
@@ -534,28 +272,21 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
             HierarchicalRenderable::addChild(systemRenderable, snowBallRenderable);
         }
 
+
         
 	{    
           // Initialization of the target
 
-	  ShaderProgramPtr texShader
+	  /*ShaderProgramPtr texShader
 	      = std::make_shared<ShaderProgram>("../shaders/textureVertex.glsl",
                                           "../shaders/textureFragment.glsl");
 	  viewer.addShaderProgram(texShader);
-          //Define a directional light for the whole scene
-	  /*glm::vec3 d_direction = glm::normalize(glm::vec3(0.0,-1.0,0.0));
-	  glm::vec3 d_ambient(1.0,1.0,1.0), d_diffuse(1.0,1.0,1.0), d_specular(1.0,1.0,1.0);
-	  DirectionalLightPtr directionalLight = std::make_shared<DirectionalLight>(d_direction, d_ambient, d_diffuse, d_specular);
-	  glm::vec3 lightPosition(0.0,0.0,0.0);
-	  DirectionalLightRenderablePtr directionalLightRenderable = std::make_shared<DirectionalLightRenderable>(flatShader, directionalLight, lightPosition);
-	  directionalLightRenderable->setLocalTransform(glm::scale(glm::mat4(1.0), glm::vec3(0.5,0.5,0.5)));
-	  viewer.addRenderable(directionalLightRenderable);
-          viewer.setDirectionalLight(directionalLight);*/
-
+	  */
 	  std::string filename;
 	  filename = "../textures/cible.png";
 	  auto cylinder = std::make_shared<KeyframedCylinderRenderable>(texShader,filename);
-          cylinder->setLocalTransform((glm::rotate(glm::mat4(1.0), (float)(M_PI), glm::vec3(0,0,1))* glm::rotate(glm::mat4(1.0), (float)(M_PI/2.0), glm::vec3(1,0,0))) * glm::scale(glm::mat4(1.0), glm::vec3(0.5,0.5,0.125)) * glm::translate(glm::mat4(1.0), glm::vec3(0,1.0,-10.0)));
+          cylinder->setLocalTransform(glm::rotate(glm::mat4(1.0), (float)(M_PI/2.0), glm::vec3(1,0,0)) * glm::scale(glm::mat4(1.0), glm::vec3(1.0,1.0,0.125)) * glm::translate(glm::mat4(1.0), glm::vec3(0,10.0,-10.0)));
+
           cylinder->setParentTransform(glm::mat4(1.0));
           int n = 5;
           for (int i = 0; i < n; i++) {
@@ -599,7 +330,7 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
 
         }  
     // Define a directional light for the whole scene
-    glm::vec3 lightDirection = glm::normalize(glm::vec3(0.0, -1.0, -1.0));
+    glm::vec3 lightDirection = glm::normalize(glm::vec3(0.0, 1.0, 0.0));
     glm::vec3 ghostWhite(248.0/255, 248.0/255, 1.0);
     DirectionalLightPtr directionalLight =
         std::make_shared<DirectionalLight>(lightDirection, ghostWhite, ghostWhite, ghostWhite);
@@ -621,4 +352,13 @@ void snow_scene(Viewer& viewer, DynamicSystemPtr& system, DynamicSystemRenderabl
     ConstantForceFieldPtr gravityForceField = std::make_shared<ConstantForceField>(system->getParticles(), glm::vec3{0,0,-10} );
     system->addForceField(gravityForceField);
  
+
+        // End Snow
+
+
+    //Initialize a force field that apply to all the particles of the system to simulate gravity
+    //Add it to the system as a force field
+    //gravityForceField = std::make_shared<ConstantForceField>(system->getParticles(), glm::vec3{0,0,-10} );
+    //system->addForceField(gravityForceField);
 }
+

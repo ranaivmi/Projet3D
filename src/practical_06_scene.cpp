@@ -58,7 +58,9 @@ void initialize_practical_06_scene(Viewer& viewer)
 void practical_06_movingCylinder(Viewer& viewer, const ShaderProgramPtr& shader)
 {
     //Animated cylinder
-    auto cylinder = std::make_shared<KeyframedCylinderRenderable>(shader, Material::Emerald());
+    std::string filename;
+    filename = "../textures/mipmap1.png";
+    auto cylinder = std::make_shared<KeyframedCylinderRenderable>(shader,filename);
     cylinder->setParentTransform(glm::mat4(1.0));
 
     //Keyframes on parent transformation: pairs of (time, transformation)
@@ -79,7 +81,9 @@ void practical_06_movingTree(Viewer& viewer, const ShaderProgramPtr& shader)
     //The animation is hierarchical too (addParentTransformKeyframe, addLocalTransformKeyframe)
 
     //Main branch
-    auto root = std::make_shared<KeyframedCylinderRenderable>(shader);
+    std::string filename;
+    filename = "../textures/mipmap1.png";
+    auto root = std::make_shared<KeyframedCylinderRenderable>(shader,filename);
     root->setLocalTransform( GeometricTransformation( glm::vec3{}, glm::quat(), glm::vec3{0.1,0.1,2.0}).toMatrix() );
 
     root->addParentTransformKeyframe(0.0, GeometricTransformation( glm::vec3{2,0,0}) );
@@ -90,7 +94,7 @@ void practical_06_movingTree(Viewer& viewer, const ShaderProgramPtr& shader)
     root->addParentTransformKeyframe(5.0, GeometricTransformation( glm::vec3{2,0,0}, glm::quat(glm::vec3(0, 0.0, 0))) );
 
     //First primary branch
-    auto r1 = std::make_shared<KeyframedCylinderRenderable>(shader);
+    auto r1 = std::make_shared<KeyframedCylinderRenderable>(shader,filename);
 
     r1->addParentTransformKeyframe(0.0, GeometricTransformation( glm::vec3{0,0,2.0}, glm::quat( glm::vec3(0, 0.78, 0))) );
     r1->addParentTransformKeyframe(2.0, GeometricTransformation( glm::vec3{0,0,2.0}, glm::quat( glm::vec3(0, 0.84, 0))) );
@@ -102,7 +106,7 @@ void practical_06_movingTree(Viewer& viewer, const ShaderProgramPtr& shader)
     HierarchicalRenderable::addChild(root, r1);
 
 
-    auto r2 = std::make_shared<KeyframedCylinderRenderable>(shader);
+    auto r2 = std::make_shared<KeyframedCylinderRenderable>(shader,filename);
 
     r2->addParentTransformKeyframe(0.0, GeometricTransformation( glm::vec3{0,0,2.0}, glm::quat( glm::vec3( 0, 0.35, 0))) );
     r2->addParentTransformKeyframe(1.0, GeometricTransformation( glm::vec3{0,0,2.0}, glm::quat( glm::vec3( 0, 0.25, 0))) );
@@ -117,7 +121,7 @@ void practical_06_movingTree(Viewer& viewer, const ShaderProgramPtr& shader)
     HierarchicalRenderable::addChild(r1, r2);
 
     //First secondary branch
-    auto s1 = std::make_shared<KeyframedCylinderRenderable>(shader);
+    auto s1 = std::make_shared<KeyframedCylinderRenderable>(shader,filename);
 
     s1->addParentTransformKeyframe(0.0, GeometricTransformation( glm::vec3{0,0,0.4}, glm::angleAxis( float(M_PI_4), glm::normalize(glm::vec3( 1,1,0)) ), glm::vec3{1,1,1}) );
 
@@ -126,7 +130,7 @@ void practical_06_movingTree(Viewer& viewer, const ShaderProgramPtr& shader)
     s1->addLocalTransformKeyframe(5.0, GeometricTransformation( glm::vec3{}, glm::quat(), glm::vec3{0.1,0.1,1.5}) );
     HierarchicalRenderable::addChild(r1, s1);
 
-    auto s11 = std::make_shared<KeyframedCylinderRenderable>(shader);
+    auto s11 = std::make_shared<KeyframedCylinderRenderable>(shader,filename);
     s11->addParentTransformKeyframe(0.0, GeometricTransformation( glm::vec3{0,0,1.5}, glm::quat( glm::vec3( 0, -0.78, 0) ), glm::vec3{1,1,1}) );
     s11->addParentTransformKeyframe(2.0, GeometricTransformation( glm::vec3{0,0,1.5}, glm::quat( glm::vec3( 0, -0.4, 0) ), glm::vec3{1,1,1}) );
     s11->addParentTransformKeyframe(3.0, GeometricTransformation( glm::vec3{0,0,1.5}, glm::quat( glm::vec3( 0, -0.6, 0) ), glm::vec3{1,1,1}) );
@@ -140,18 +144,18 @@ void practical_06_movingTree(Viewer& viewer, const ShaderProgramPtr& shader)
     HierarchicalRenderable::addChild(s1, s11);
 
     //Second secondary branch
-    auto s2 = std::make_shared<KeyframedCylinderRenderable>(shader);
+    auto s2 = std::make_shared<KeyframedCylinderRenderable>(shader,filename);
     s2->setParentTransform( GeometricTransformation( glm::vec3{0,0,1.4}, glm::angleAxis( float(M_PI_4), glm::normalize(glm::vec3(-0.3 ,-1,0)) ), glm::vec3{1,1,1} ).toMatrix() );
     s2->setLocalTransform( GeometricTransformation( glm::vec3{}, glm::quat(), glm::vec3{0.1,0.1,2.0}).toMatrix() );
     HierarchicalRenderable::addChild(r1, s2);
 
-    auto s21 = std::make_shared<KeyframedCylinderRenderable>(shader);
+    auto s21 = std::make_shared<KeyframedCylinderRenderable>(shader, filename);
     s21->setParentTransform( GeometricTransformation( glm::vec3{0,0,2.0}, glm::angleAxis( float(-M_PI_4), glm::normalize(glm::vec3( 0, -1, 0)) ), glm::vec3{1,1,1} ).toMatrix() );
     s21->setLocalTransform( GeometricTransformation( glm::vec3{}, glm::quat(), glm::vec3{0.1,0.1,2.0}).toMatrix() );
     HierarchicalRenderable::addChild(s2, s21);
 
     //Third secondary branch
-    auto s3 = std::make_shared<KeyframedCylinderRenderable>(shader);
+    auto s3 = std::make_shared<KeyframedCylinderRenderable>(shader,filename);
     s3->addParentTransformKeyframe(0.0, GeometricTransformation( glm::vec3{0, 0, 2 }, glm::quat( glm::vec3{-0.78, -0.6, -0.5})) );
     s3->addParentTransformKeyframe(2.0, GeometricTransformation( glm::vec3{0, 0, 2 }, glm::quat( glm::vec3{-0.78,  0.3, -0.5})) );
     s3->addParentTransformKeyframe(5.0, GeometricTransformation( glm::vec3{0, 0, 2 }, glm::quat( glm::vec3{-0.78, -0.6, -0.5})) );

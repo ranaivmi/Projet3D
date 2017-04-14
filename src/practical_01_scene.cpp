@@ -6,6 +6,17 @@
 #include "../teachers/IndexedCubeRenderable.hpp"
 #include "../teachers/MeshRenderable.hpp"
 
+#include "../include/FrameRenderable.hpp"
+#include "../include/lighting/DirectionalLightRenderable.hpp"
+
+#include "../include/texturing/TexturedPlaneRenderable.hpp"
+#include "../include/texturing/TexturedCubeRenderable.hpp"
+#include "../include/texturing/TexturedCylinderRenderable.hpp"
+#include "../include/texturing/MultiTexturedCubeRenderable.hpp"
+#include "../include/texturing/MipMapCubeRenderable.hpp"
+#include "../include/texturing/TexturedMeshRenderable.hpp"
+#include "../teachers/Geometries.hpp"
+#include "../include/keyframes/KeyframedCylinderRenderable.hpp"
 
 void initialize_practical_01_scene(Viewer& viewer)
 {
@@ -31,9 +42,44 @@ void initialize_practical_01_scene(Viewer& viewer)
         = std::make_shared<teachers::IndexedCubeRenderable>(flatShader);
     teachersIndexedCube->setModelMatrix(glm::translate(glm::mat4(), glm::vec3(-2.0, 0.0, 0.0)));
     viewer.addRenderable(teachersIndexedCube);*/
+    ShaderProgramPtr texShader
+        = std::make_shared<ShaderProgram>("../shaders/textureVertex.glsl",
+                                          "../shaders/textureFragment.glsl");
+    viewer.addShaderProgram(texShader);
+  
+          //Define a directional light for the whole scene
+	  glm::vec3 d_direction = glm::normalize(glm::vec3(0.0,-1.0,0.0));
+	  glm::vec3 d_ambient(1.0,1.0,1.0), d_diffuse(1.0,1.0,1.0), d_specular(1.0,1.0,1.0);
+	  DirectionalLightPtr directionalLight = std::make_shared<DirectionalLight>(d_direction, d_ambient, d_diffuse, d_specular);
+          glm::vec3 lightPosition(0.0,0.0,0.0);
+	  DirectionalLightRenderablePtr directionalLightRenderable = std::make_shared<DirectionalLightRenderable>(flatShader, directionalLight, lightPosition);
+	  directionalLightRenderable->setLocalTransform(glm::scale(glm::mat4(1.0), glm::vec3(0.5,0.5,0.5)));
+          viewer.setDirectionalLight(directionalLight);
+	  viewer.addRenderable(directionalLightRenderable);
 
-    
-    std::shared_ptr<teachers::MeshRenderable> teachersMesh
-        = std::make_shared<teachers::MeshRenderable>(flatShader, "../meshes/cannon.obj");
-    viewer.addRenderable(teachersMesh);
+	  std::string filename;
+	  filename = "../textures/cible.png";
+	  auto cylinder = std::make_shared<KeyframedCylinderRenderable>(texShader,filename);
+          cylinder->setLocalTransform((glm::rotate(glm::mat4(1.0), (float)(M_PI), glm::vec3(0,0,1))* glm::rotate(glm::mat4(1.0), (float)(M_PI/2.0), glm::vec3(1,0,0))) * glm::scale(glm::mat4(1.0), glm::vec3(0.5,0.5,0.125)) * glm::translate(glm::mat4(1.0), glm::vec3(0.0,1.0,-10.0)));
+          cylinder->setParentTransform(glm::mat4(1.0));
+          int n = 5;
+          for (int i = 0; i < n; i++) {
+              cylinder->addParentTransformKeyframe(0.5 + 2*i, GeometricTransformation(glm::vec3(2.0, 0.0, 0.0)));
+              cylinder->addParentTransformKeyframe(1.5 + 2*i, GeometricTransformation(glm::vec3(-2.0, 0.0, 0.0)));
+	      }
+	  cylinder->setMaterial(Material::Pearl());
+          viewer.addRenderable(cylinder);
 }
+
+
+#include "../include/ShaderProgram.hpp"
+#include "../include/Viewer.hpp"
+#include "../include/FrameRenderable.hpp"
+#include "../include/lighting/DirectionalLightRenderable.hpp"
+
+#include "../include/texturing/TexturedPlaneRenderable.hpp"
+#include "../include/texturing/TexturedCubeRenderable.hpp"
+#include "../include/texturing/TexturedCylinderRenderable.hpp"
+#include "../include/texturing/MultiTexturedCubeRenderable.hpp"
+#include "../include/texturing/MipMapCubeRenderable.hpp"
+#include "../include/texturing/TexturedMeshRenderable.hpp"

@@ -1,18 +1,17 @@
 #ifndef KEYFRAMED_CYLINDER_RENDERABLE_HPP
 #define KEYFRAMED_CYLINDER_RENDERABLE_HPP
 
-#include "../lighting/LightedCylinderRenderable.hpp"
+#include "../texturing/TexturedCylinderRenderable.hpp"
 #include "KeyframeCollection.hpp"
 
 #include <glm/glm.hpp>
 
 class GeometricTransformation;
 
-class KeyframedCylinderRenderable : public LightedCylinderRenderable
+class KeyframedCylinderRenderable : public TexturedCylinderRenderable
 {
 public:
-    KeyframedCylinderRenderable(ShaderProgramPtr program,
-        const MaterialPtr& material = Material::Pearl());
+    KeyframedCylinderRenderable(ShaderProgramPtr program, const std::string& textureFilename);
     ~KeyframedCylinderRenderable();
 
     /**

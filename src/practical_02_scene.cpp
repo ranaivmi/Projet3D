@@ -22,22 +22,22 @@ void initialize_practical_02_scene(Viewer& viewer)
     viewer.addRenderable(std::make_shared<FrameRenderable>(flatShader));
 
     for (int i=0; i<10; i++){
-	if (i%4==0){
-	    translateM = glm::translate(glm::mat4(), glm::vec3(2.5*i,-i*2.0,0.0)); 
-        } else if (i%4==1){
-	    translateM = glm::translate(glm::mat4(), glm::vec3(-i*2.0,i*1.5,0.0));
-	} else if(i%4==2){
-	    translateM = glm::translate(glm::mat4(), glm::vec3(i*1.5,5.0,0.0));
-	} else {
-	    translateM = glm::translate(glm::mat4(), glm::vec3(-i*1.75,-i*2.75,0.0));
-	    }
-	createFir(viewer, translateM, flatShader);
+    	if (i%4==0){
+    	    translateM = glm::translate(glm::mat4(), glm::vec3(2.5*i,-i*2.0,0.0));
+            } else if (i%4==1){
+    	    translateM = glm::translate(glm::mat4(), glm::vec3(-i*2.0,i*1.5,0.0));
+    	} else if(i%4==2){
+    	    translateM = glm::translate(glm::mat4(), glm::vec3(i*1.5,5.0,0.0));
+    	} else {
+    	    translateM = glm::translate(glm::mat4(), glm::vec3(-i*1.75,-i*2.75,0.0));
+    	    }
+    	createFir(viewer, translateM, flatShader);
     }
-   
+
 }
 
 void createFir(Viewer& viewer, glm::mat4 FinaltranslateM , ShaderProgramPtr flatShader ){
-    
+
     glm::mat4 scaleM(1.0);
     glm::mat4 translateM(1.0);
 
@@ -47,7 +47,7 @@ void createFir(Viewer& viewer, glm::mat4 FinaltranslateM , ShaderProgramPtr flat
     scaleM = glm::scale(glm::mat4(), glm::vec3(0.5, 0.5, 0.5));
       Tron->setLocalTransform(scaleM*Tron->getModelMatrix());
       Tron->setModelMatrix(FinaltranslateM);
-    
+
     //Haut du sapin
     std::shared_ptr<formes::ConeRenderable> Cone1
         = std::make_shared<formes::ConeRenderable>(flatShader, 30);

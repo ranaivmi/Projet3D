@@ -11,15 +11,15 @@
 class TexturedCylinderRenderable : public HierarchicalRenderable
 {
 public :
-    TexturedCylinderRenderable(ShaderProgramPtr shaderProgram, const std::string& textureFilename, unsigned int nbSlices);
+    TexturedCylinderRenderable(ShaderProgramPtr shaderProgram, const std::string& textureFilename, unsigned int nbSlices=20);
     ~TexturedCylinderRenderable();
 
     void setMaterial(const MaterialPtr& material);
 
-private:
+protected:
     void do_draw();
     void do_animate(float time);
-
+private:
     std::vector< glm::vec3 > m_positions;
     std::vector< glm::vec3 > m_normals;
     std::vector< glm::vec2 > m_texCoords;

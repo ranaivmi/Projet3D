@@ -9,8 +9,8 @@
 #include <GL/glew.h>
 
 KeyframedCylinderRenderable::KeyframedCylinderRenderable(
-        ShaderProgramPtr prog, const MaterialPtr& material)
-    : LightedCylinderRenderable(prog, material)
+    ShaderProgramPtr prog,const std::string& textureFilename)
+    :TexturedCylinderRenderable(prog,textureFilename)
 {
 }
 

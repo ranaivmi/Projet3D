@@ -258,8 +258,8 @@ void teachers::getUnitCylinder(std::vector<glm::vec3> &positions, std::vector<gl
         positions[ voffset +  7 ] = glm::vec3{previous_cos, previous_sin, 0};
         positions[ voffset +  8 ] = glm::vec3{cos, sin,0};
 
-        positions[ voffset +  9 ] = glm::vec3{cos*0.5, sin*0.5,0};
-        positions[ voffset + 10 ] = glm::vec3{previous_cos*0.5, previous_sin*0.5, 0};
+        positions[ voffset +  9 ] = glm::vec3{cos, sin,0};
+        positions[ voffset + 10 ] = glm::vec3{previous_cos, previous_sin, 0};
         positions[ voffset + 11 ] = glm::vec3{0, 0, 0}; //useless
 
         normals[ voffset +  0 ] = glm::vec3{0,0,1};
